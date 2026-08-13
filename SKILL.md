@@ -76,6 +76,7 @@ license: MIT
      `<SKILL_DIR>` 为本技能所在目录（`C:\Users\zhang\.config\opencode\skills\geogebra`）。若技能被复制/移动，请相应更新该路径。
      > 若 `python` 不在 PATH 中，本机 Python 解释器为 `D:\py_base_env\.venv\Scripts\python.exe`（Python 3.14.5，**仅本机参考**），可替换命令中的 `python`。
    - **备选（人工规则）**：按 [references/command-validation.md](references/command-validation.md) 的检查清单逐项自查。
+   - **语义提醒**：验证脚本**仅校验语法**（括号配对、SetColor 颜色、Text 换行、未知命令、未定义变量），**不校验语义正确性**——如 `Sum(多边形列表)`、对对象类型调用不匹配的命令这类语义错误会静态通过。构造 `Sum`/`Sequence`/`Zip` 组合或复杂对象时，须额外按 `references/command-validation.md` 的语义检查项、对照 `data/commands-index.json` 的命令语法自查，确认命令用法与对象类型匹配。
    - 如发现错误，**修正后再重新验证**，直到 `ok == true`。将验证通过的指令和验证摘要一并输出。
 
 ## 需求澄清指导原则
