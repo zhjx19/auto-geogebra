@@ -32,6 +32,32 @@ COMMAND_ALIASES = {
     "Textfield": "InputBox",
 }
 
+# 以 \n 开头的已知 LaTeX 命令：用于区分「误写的换行」与合法 LaTeX 指令（如 \nu、\neq）
+LATEX_N_COMMANDS = (
+    "newline", "nonumber", "notag", "nolinebreak", "nopagebreak",
+    "nu", "neq", "nabla", "notin", "neg", "nmid",
+    "nsubseteq", "nsupseteq", "nleq", "ngeq", "nless", "ngtr",
+    "napprox", "nequiv", "nexists", "nparallel", "nvdash", "nvDash",
+    "natural", "nearrow", "nwarrow", "not", "nolimits",
+)
+
+# GeoGebra 常见英文色名（SetColor 字符串形式仅做白名单提醒，不作硬错误）
+GGB_BASIC_COLORS = {
+    "black", "white", "red", "green", "blue", "cyan", "magenta", "yellow",
+    "gray", "grey", "lightgray", "darkgray", "orange", "brown", "pink",
+    "purple", "violet", "darkgreen", "darkblue", "darkred", "crimson",
+    "turquoise",
+}
+
+# 内置对象/常量名（未定义变量检查的豁免名单）
+BUILTIN_WORDS = {
+    "pi", "e", "i", "x", "y", "z", "true", "false", "undefined",
+    "xAxis", "yAxis", "zAxis", "xOyPlane",
+}
+
+# 迭代型命令：行内的单字母标识符几乎都是循环变量，豁免未定义检查
+ITERATOR_CMDS = {"Sequence", "Sum", "Product", "Zip", "KeepIf", "Filter", "Sort", "CountIf"}
+
 
 def load_command_index():
     """加载 GeoGebra 指令索引（不强制）。"""
@@ -47,11 +73,16 @@ def load_command_index():
 
 
 def normalize_commands(text):
-    """将输入文本规范化为非空、非注释的行数组。"""
+    """将输入文本规范化为非空、非注释的行数组。
+
+    GeoGebra 指令脚本用 `//` 或 `#` 写注释（真实输出以 `#` 为主），
+    两种都必须跳过——否则注释里的数学符号（如 \\lim_、f1）会被当作
+    命令/变量引用扫描，产生"未定义变量"假警告。
+    """
     lines = []
     for raw in text.replace("\r\n", "\n").split("\n"):
         t = raw.strip()
-        if t and not t.startswith("//"):
+        if t and not t.startswith("//") and not t.startswith("#"):
             lines.append(t)
     return lines
 
@@ -98,12 +129,16 @@ def validate_commands(text):
     if cmd_index and isinstance(cmd_index.get("commands"), list):
         cmd_names = [c.get("name") for c in cmd_index["commands"] if isinstance(c, dict)]
 
-    # 第一遍：解析变量定义
+    # 第一遍：解析变量定义（含 f(x)=… 函数定义形式）
     defined_vars = {}
     for i, line in enumerate(lines, 1):
         m = re.match(r"^([\w_]+)\s*[:=]", line)
         if m:
             defined_vars[m.group(1)] = i
+            continue
+        m_fn = re.match(r"^([\w_]+)\s*\([^)]*\)\s*[:=]", line)
+        if m_fn:
+            defined_vars[m_fn.group(1)] = i
 
     # 第二遍：逐行检查
     for i, line in enumerate(lines, 1):
@@ -145,18 +180,47 @@ def validate_commands(text):
                         "text": line, "suggestion": sug,
                     })
 
-        # 4. Text() 中的 \n 检查
-        if cmd_name == "Text":
-            m = re.search(r'Text\s*\(\s*"([^"]*)"', line)
-            if m:
-                str_arg = m.group(1)
-                if re.search(r"\\n[^A-Za-z]", str_arg) or str_arg.endswith("\\n"):
-                    result["errors"].append({
-                        "line": i, "severity": "error", "rule": "text-backslash-n",
-                        "message": "Text() 不支持 \\n 换行！LaTeX 模式下应使用 \\\\ 换行。",
+            # 字符串色名 / hex 形式：不在常见清单时给出提醒（静态无法确证拼写，仅 warning）
+            m_str = re.search(r'SetColor\s*\(\s*[^,"()]+,\s*"([^"]*)"\s*\)', line)
+            if m_str:
+                cname = m_str.group(1).strip()
+                low = cname.lower()
+                if cname.startswith("#"):
+                    hex_body = low.lstrip("#")
+                    if not re.fullmatch(r"[0-9a-f]{3}|[0-9a-f]{6}", hex_body):
+                        result["warnings"].append({
+                            "line": i, "severity": "warning", "rule": "setcolor-name",
+                            "message": f"SetColor 十六进制颜色 '{cname}' 格式可疑（应为 #RGB 或 #RRGGBB）。",
+                            "text": line,
+                        })
+                elif low not in GGB_BASIC_COLORS:
+                    result["warnings"].append({
+                        "line": i, "severity": "warning", "rule": "setcolor-name",
+                        "message": f"SetColor 颜色名 '{cname}' 不在常见色名清单中，静态验证无法确认；请人工核对拼写，或改用 0-1 范围的 RGB 数值形式。",
                         "text": line,
                     })
-                    result["ok"] = False
+
+        # 4. Text() 中的 \n 检查
+        #    \n 后跟字母时可能是合法 LaTeX 命令（\nu、\neq…），逐个提取
+        #    \n 后缀，只有当 \n+后缀 构不成任何已知 LaTeX 命令时才报错。
+        if cmd_name == "Text":
+            m = re.search(r'Text\s*\(\s*"((?:[^"\\]|\\.)*)"', line)
+            if m:
+                str_arg = m.group(1)
+                for mm in re.finditer(r"\\n([A-Za-z]*)", str_arg):
+                    suffix = mm.group(1)
+                    cand = "n" + suffix
+                    is_latex_cmd = bool(suffix) and any(
+                        c == cand or c.startswith(cand) for c in LATEX_N_COMMANDS
+                    )
+                    if not is_latex_cmd:
+                        result["errors"].append({
+                            "line": i, "severity": "error", "rule": "text-backslash-n",
+                            "message": "Text() 不支持 \\n 换行！LaTeX 模式下应使用 \\\\ 换行。",
+                            "text": line,
+                        })
+                        result["ok"] = False
+                        break
 
         # 5. Slider 参数检查
         if cmd_name == "Slider":
@@ -197,26 +261,32 @@ def validate_commands(text):
                     "text": line, "suggestions": suggestions[:5],
                 })
 
-        # 7. 未定义变量引用检查（简化版）
-        if not cmd_name:
-            for var_name in re.findall(r"[a-zA-Z]\w*", line):
-                if var_name in ("pi", "e", "i", "x", "y", "true", "false", "undefined"):
-                    continue
-                if var_name + "(" in line:
-                    continue  # 函数调用不算引用
-                if var_name in defined_vars:
-                    continue
-                if re.match(r"^" + re.escape(var_name) + r"\s*=", line):
-                    continue  # 本行定义
-                # 跳过文本字符串内的内容
-                stripped = re.sub(r'"[^"]*"', "", line)
-                if var_name not in stripped:
-                    continue
-                result["warnings"].append({
-                    "line": i, "severity": "warning", "rule": "undefined-variable",
-                    "message": f"变量 '{var_name}' 可能在第 {i} 行使用前未定义。", "text": line,
-                })
-                break  # 每行只报一个
+        # 7. 未定义变量引用检查（对含命令调用的行同样生效）
+        #    先剥离字符串与 LaTeX 记号再扫描标识符；已知命令名、内置常量、
+        #    迭代型命令行上的单字母循环变量、本行定义均豁免。
+        stripped_line = re.sub(r'"(?:[^"\\]|\\.)*"', "", line)
+        stripped_line = re.sub(r"\\[a-zA-Z]+", " ", stripped_line)
+        allow_single_letter = cmd_name in ITERATOR_CMDS
+        for var_name in re.findall(r"[A-Za-z][\w]*", stripped_line):
+            if var_name in BUILTIN_WORDS:
+                continue
+            if cmd_name and var_name == cmd_name:
+                continue  # 本行调用的命令名（未知命令已由规则 6 单独报告）
+            if cmd_names and var_name in cmd_names:
+                continue  # 已知命令名不算变量引用（修复：命令行此前被整体跳过）
+            if var_name in COMMAND_ALIASES:
+                continue  # 别名误写已由规则 6 单独提示
+            if allow_single_letter and len(var_name) == 1:
+                continue
+            if var_name in defined_vars:
+                continue
+            if re.match(re.escape(var_name) + r"\s*(?:\([^)]*\))?\s*[:=]", stripped_line):
+                continue  # 本行定义变量或函数（含 f(x)=… 形式）
+            result["warnings"].append({
+                "line": i, "severity": "warning", "rule": "undefined-variable",
+                "message": f"变量 '{var_name}' 可能在第 {i} 行使用前未定义。", "text": line,
+            })
+            break  # 每行只报一个
 
     if not result["errors"] and not result["warnings"]:
         result["info"].append({"message": "✓ 未检测到常见错误。"})
