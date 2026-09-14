@@ -8,6 +8,8 @@
   2. 埋错样例 ×1   —— 期望 L1 命中 3 errors + 3 warnings；L2 命中 3 errors
   3. stdin 管道    —— 带 UTF-8 BOM / GBK 字节流，期望零误报
   4. 文件编码边界  —— UTF-8+BOM / GBK(ANSI) 文件，期望不崩溃、正常验证
+  5. 命名规则      —— 小写坐标名 / 保留名提示（v1.3）
+  6. 使用顺序      —— 先使用后定义提示（v1.3）
 
 用法：
     python scripts/smoke_test.py        # 跑全部用例，输出 PASS/FAIL 与汇总
@@ -58,16 +60,16 @@ ShowLabel(detVal, false)
 ShowLabel(vec1, false)
 """
 
-GOOD_MORE = r"""# 导数定义演示——冒烟样例
+GOOD_MORE = r"""# 导数定义演示——冒烟样例（命名已按真机规则修正）
 f(x) = x^3 - 3x + 1
 a = Slider(-2, 2, 0.1)
 h = Slider(-1, 1, 0.01)
 A = (a, f(a))
 B = (a + h, f(a + h))
-sec = Line(A, B)
-tan = Tangent(a, f)
-mSec = Slope(sec)
-mTan = Slope(tan)
+secant = Line(A, B)
+tangentLn = Tangent(a, f)
+mSec = Slope(secant)
+mTan = Slope(tangentLn)
 dTan = Derivative(f)
 distAB = Distance(A, B)
 txt = Text("割线斜率 = " + mSec, (3, 2), true, true)
@@ -88,6 +90,18 @@ s = Slider(5, 1, 0.1)
 bad = 3 + (2
 BadCommand(poly)
 zzz = qqq + 1
+"""
+
+NAMING_CASES = r"""# 命名规则用例：小写坐标名 ×2 + 保留名 ×1（v1.3）
+pt1 = (0, 0)
+pt2 = (2, 4)
+ln1 = Line(pt1, pt2)
+sec = Line((0, 0), (1, 1))
+"""
+
+ORDER_CASES = r"""# 使用顺序用例：先使用、后定义（v1.3）
+y1 = x1 + 1
+x1 = 2
 """
 
 CHECKS = 0
@@ -205,6 +219,28 @@ def main():
         rep = run(L1, [bom_path])
         check("UTF-8+BOM 文件：L1 ok=true 且零误报",
               bool(rep) and rep.get("ok") is True and not rep.get("warnings"),
+              json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
+
+        # ---------- 命名规则（v1.3） ----------
+        naming = os.path.join(tmp, "naming_rules.txt")
+        with open(naming, "w", encoding="utf-8") as f:
+            f.write(NAMING_CASES)
+        rep = run(L1, [naming])
+        check("L1 命名规则：小写坐标名 ×2 + 保留名 ×1 全部提示",
+              bool(rep) and rep.get("ok") is True
+              and len(rep.get("warnings", [])) == 3
+              and set(rules_of(rep.get("warnings", []))) == {"lowercase-point", "reserved-name"},
+              json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
+
+        # ---------- 使用顺序（v1.3） ----------
+        order = os.path.join(tmp, "order_rules.txt")
+        with open(order, "w", encoding="utf-8") as f:
+            f.write(ORDER_CASES)
+        rep = run(L1, [order])
+        check("L1 顺序检查：使用早于定义时提示 use-before-define",
+              bool(rep) and rep.get("ok") is True
+              and len(rep.get("warnings", [])) == 1
+              and rules_of(rep.get("warnings", [])) == ["use-before-define"],
               json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
 
     print("\n----- 汇总 -----")

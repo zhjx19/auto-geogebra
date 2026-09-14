@@ -163,7 +163,7 @@ def validate_commands(text):
     """静态验证 GeoGebra 指令脚本。
 
     检查：括号配对、SetColor 颜色范围、Text() 换行、Slider 参数、
-    未知命令、未定义变量引用。返回 dict。
+    未知命令、未定义变量引用、命名规则（保留名 / 小写坐标名）与使用顺序提醒。返回 dict。
     """
     result = {
         "ok": True,
@@ -182,16 +182,16 @@ def validate_commands(text):
     if cmd_index and isinstance(cmd_index.get("commands"), list):
         cmd_names = [c.get("name") for c in cmd_index["commands"] if isinstance(c, dict)]
 
-    # 第一遍：解析变量定义（含 f(x)=… 函数定义形式）
+    # 第一遍：解析变量定义（含 f(x)=… 函数定义形式；记录“首次”定义行号，供顺序检查用）
     defined_vars = {}
     for i, line in enumerate(lines, 1):
         m = re.match(r"^([\w_]+)\s*[:=]", line)
         if m:
-            defined_vars[m.group(1)] = i
+            defined_vars.setdefault(m.group(1), i)
             continue
         m_fn = re.match(r"^([\w_]+)\s*\([^)]*\)\s*[:=]", line)
         if m_fn:
-            defined_vars[m_fn.group(1)] = i
+            defined_vars.setdefault(m_fn.group(1), i)
 
     # 第二遍：逐行检查
     for i, line in enumerate(lines, 1):
@@ -218,6 +218,23 @@ def validate_commands(text):
                 cmd_name = m.group(1)
         if cmd_name:
             result["checkedCommands"].append({"line": i, "name": cmd_name})
+
+        # 2.5 命名规则提醒（v1.3，来自真机实测：这两类命名会在导出时静默翻车）
+        m_def = re.match(r"^([\w_]+)\s*(?:\([^)]*\))?\s*[:=]", line)
+        if m_def and m_def.group(1) in BUILTIN_FUNCTIONS:
+            _n = m_def.group(1)
+            result["warnings"].append({
+                "line": i, "severity": "warning", "rule": "reserved-name",
+                "message": f"对象名 '{_n}' 与 GeoGebra 内置函数同名：引擎会自动改名为 {_n}_{{1}}，之后按原名引用会失败（真机实测）。建议改名，如 '{_n}Line'。",
+                "text": line,
+            })
+        m_lc = re.match(r"^([a-z][\w]*)\s*=\s*\([^()]*,[^()]*\)\s*$", line)
+        if m_lc:
+            result["warnings"].append({
+                "line": i, "severity": "warning", "rule": "lowercase-point",
+                "message": f"'{m_lc.group(1)}' 以小写开头且定义了坐标对：该引擎会将其创建为「向量」而非「点」（真机实测）。如需要点请改用大写开头名或 Point(...)；若本意就是向量可忽略。",
+                "text": line,
+            })
 
         # 3. SetColor 颜色范围检查 (0-1)
         if cmd_name == "SetColor":
@@ -332,6 +349,13 @@ def validate_commands(text):
             if allow_single_letter and len(var_name) == 1:
                 continue
             if var_name in defined_vars:
+                if defined_vars[var_name] > i:
+                    result["warnings"].append({
+                        "line": i, "severity": "warning", "rule": "use-before-define",
+                        "message": f"变量 '{var_name}' 在第 {i} 行使用，但首次定义在第 {defined_vars[var_name]} 行：请调整为先定义后使用。",
+                        "text": line,
+                    })
+                    break
                 continue
             if re.match(re.escape(var_name) + r"\s*(?:\([^)]*\))?\s*[:=]", stripped_line):
                 continue  # 本行定义变量或函数（含 f(x)=… 形式）
