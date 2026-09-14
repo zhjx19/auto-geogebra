@@ -248,6 +248,13 @@ def check(text):
         if not name or name not in sigs:
             continue
 
+        if name == 'Button':
+            if len(args) >= 2:
+                errs.append({'line': i, 'rule': 'button-script',
+                             'message': 'Button 二参（带脚本）形式不受支持：本引擎经命令注入会静默失败（真机实测，按钮不会被创建）。请用 Button("标题") 创建，再用 tools/ggb-export/ggb_patch.py 注入脚本。',
+                             'text': line})
+            continue
+
         atypes = [infer(a, env) for a in args]
         free_pos = FREE_ARG_POS.get(name, 0)
         ok_any = False

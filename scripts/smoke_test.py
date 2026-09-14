@@ -12,6 +12,7 @@
   6. 使用顺序      —— 先使用后定义提示（v1.3）
   7. 退化构造预检  —— 零值滑块参与两点构造时的提示与抑制（v1.3.1）
   8. 内置常量名    —— e / pi 作对象名的提醒（v1.3.1）
+  9. 按钮样例      —— 单参 Button 不误报；二参 Button 提示 button-script（v1.4）
 
 用法：
     python scripts/smoke_test.py        # 跑全部用例，输出 PASS/FAIL 与汇总
@@ -129,6 +130,17 @@ secant = Line(A, B)
 CONSTANT_CASES = r"""# 内置常量名用例：e / pi 作对象名（v1.3.1）
 e = 5
 pi = 3
+"""
+
+BUTTON_OK = r"""# 按钮样例：单参 Button（v1.4）
+a = Slider(-1, 1, 0.1)
+SetValue(a, 0.5)
+btnReset = Button("重置")
+"""
+
+BUTTON_BAD = r"""# 按钮二参误写样例（v1.4）
+a = Slider(-1, 1, 0.1)
+btnBad = Button("二参", "SetValue(a, 1)")
 """
 
 CHECKS = 0
@@ -298,6 +310,26 @@ def main():
               bool(rep) and rep.get("ok") is True
               and len(rep.get("warnings", [])) == 2
               and set(rules_of(rep.get("warnings", []))) == {"reserved-constant"},
+              json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
+
+        # ---------- 按钮样例（v1.4） ----------
+        bok = os.path.join(tmp, "button_ok.txt")
+        with open(bok, "w", encoding="utf-8") as f:
+            f.write(BUTTON_OK)
+        rep1 = run(L1, [bok])
+        rep2 = run(L2, [bok])
+        check("按钮行（单参 Button）L1 ok 且 L2 0 错",
+              bool(rep1) and rep1.get("ok") is True and not rep1.get("warnings")
+              and bool(rep2) and rep2.get("semanticErrors") == 0,
+              json.dumps([rep1, rep2], ensure_ascii=False)[:300])
+
+        bbad = os.path.join(tmp, "button_bad.txt")
+        with open(bbad, "w", encoding="utf-8") as f:
+            f.write(BUTTON_BAD)
+        rep = run(L2, [bbad])
+        check("按钮二参误写 → L2 提示 button-script",
+              bool(rep) and len(rep.get("errors", [])) == 1
+              and rules_of(rep.get("errors", [])) == ["button-script"],
               json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
 
     print("\n----- 汇总 -----")
