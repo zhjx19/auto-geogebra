@@ -49,11 +49,39 @@ GGB_BASIC_COLORS = {
     "turquoise",
 }
 
-# 内置对象/常量名（未定义变量检查的豁免名单）
+# 内置对象/常量/函数名（未定义变量检查的豁免名单）
+# 注意：函数名必须列入——否则 `g(x) = sin(x)` 会把 sin 误报为「使用前未定义的变量」。
+# 这份表覆盖 GeoGebra 英文版全部常用内置函数；若用到表中没有的函数，
+# 会退回 warning（不阻断），按提示核对即可。
+BUILTIN_FUNCTIONS = {
+    # 三角
+    "sin", "cos", "tan", "cot", "sec", "csc",
+    # 反三角
+    "asin", "acos", "atan", "acot", "asec", "acsc", "atan2",
+    # 双曲
+    "sinh", "cosh", "tanh", "coth", "sech", "csch",
+    # 反双曲
+    "asinh", "acosh", "atanh", "acoth",
+    # 指数与对数
+    "exp", "ln", "log", "lg", "ld",
+    # 幂与根
+    "sqrt", "cbrt", "nroot",
+    # 取整与符号
+    "abs", "sgn", "sign", "floor", "ceil", "round", "fract",
+    # 随机
+    "random", "randomNormal",
+    # 复数与角度
+    "real", "imaginary", "conjugate", "arg", "deg", "rad",
+    # 特殊函数
+    "gamma", "beta", "erf", "erfc",
+    # 既可作为函数也可作为命令的关键字
+    "min", "max", "mod", "gcd", "lcm", "if",
+}
+
 BUILTIN_WORDS = {
     "pi", "e", "i", "x", "y", "z", "true", "false", "undefined",
     "xAxis", "yAxis", "zAxis", "xOyPlane",
-}
+} | BUILTIN_FUNCTIONS
 
 # 迭代型命令：行内的单字母标识符几乎都是循环变量，豁免未定义检查
 ITERATOR_CMDS = {"Sequence", "Sum", "Product", "Zip", "KeepIf", "Filter", "Sort", "CountIf"}
@@ -308,6 +336,10 @@ def main():
             text = f.read()
     else:
         text = sys.stdin.read()
+
+    # Windows 写出的文本文件常带 UTF-8 BOM，不剥掉会让首行定义的对象
+    # （如 "a = Slider(...)"）被误判为"变量使用前未定义"
+    text = text.lstrip("\ufeff")
 
     report = validate_commands(text)
     print(json.dumps(report, ensure_ascii=False, indent=2))

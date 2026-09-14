@@ -3,7 +3,7 @@ name: geogebra
 description: Use when 普通高校数学教师需要把教学创意转化为 GeoGebra 动态演示/课件/动画，或需要设计交互变量、滑块、构造步骤、生成 GeoGebra 指令或 .ggb 文件（涉及《高等数学》《线性代数》《概率论与数理统计》及数学专业课程）。
 metadata:
   author: 张敬信 (zhjx19)
-  version: "1.0"
+  version: "1.1"
   source: autos.skills.geogebra v0.3.1 (aardio Autos skill)
 license: MIT
 ---
@@ -68,16 +68,24 @@ license: MIT
 
 > 完成标准（第三层）：指令代码已通过验证（见下条），且输出包含全部 8 项「输出给教师的推荐格式」清单（见下文）。每一行指令的变量都能回溯到第二层的变量表。
 
-8. **🔴 指令验证（强制步骤）**：生成指令后，**必须**验证 GeoGebra 指令的常见错误。两种方式任选：
-   - **首选（自动）**：将指令保存为文本文件后运行验证脚本（脚本位于本技能目录 `scripts/validate_commands.py`，与技能文件一起分发，无需额外安装）：
-     ```
-     python "<SKILL_DIR>\scripts\validate_commands.py" "<指令文件路径>"
-     ```
-     `<SKILL_DIR>` 为本技能所在目录（`C:\Users\zhang\.config\opencode\skills\geogebra`）。若技能被复制/移动，请相应更新该路径。
-     > 若 `python` 不在 PATH 中，本机 Python 解释器为 `D:\py_base_env\.venv\Scripts\python.exe`（Python 3.14.5，**仅本机参考**），可替换命令中的 `python`。
+8. **🔴 指令验证（强制步骤，双验证）**：生成指令后，**必须**跑完两道静态验证。两个脚本都在本技能 `scripts/` 目录，随技能分发，无需额外安装：
+   ```
+   python "<SKILL_DIR>\scripts\validate_commands.py" "<指令文件路径>"   # L1 语法验证
+   python "<SKILL_DIR>\scripts\validate_types.py"    "<指令文件路径>"   # L2 语义验证
+   ```
+
+   | 层 | 检查内容 | 通过标准 |
+   |---|---|---|
+   | L1 语法 | 括号配对、SetColor 0-1 范围、Text 的 `\n`、Slider 参数、命令拼写、未定义变量 | `ok == true` |
+   | L2 语义 | 参数类型不匹配、矩阵维度错配、对几何对象列表求和 | `semanticErrors == 0` |
+
+   - `<SKILL_DIR>` 为本技能所在目录（WorkBuddy：`C:\Users\zhang\.workbuddy\skills\geogebra`；opencode：`C:\Users\zhang\.config\opencode\skills\geogebra`）。脚本按自身位置自动定位 `data/commands-index.json`，无需额外传参。
+     > 若 `python` 不在 PATH 中，本机 Python 解释器为 `D:\py_base_env\.venv\Scripts\python.exe`（**仅本机参考**），可替换命令中的 `python`。
    - **备选（人工规则）**：按 [references/command-validation.md](references/command-validation.md) 的检查清单逐项自查。
-   - **语义提醒**：验证脚本**仅校验语法**（括号配对、SetColor 颜色、Text 换行、未知命令、未定义变量），**不校验语义正确性**——如 `Sum(多边形列表)`、对对象类型调用不匹配的命令这类语义错误会静态通过。构造 `Sum`/`Sequence`/`Zip` 组合或复杂对象时，须额外按 `references/command-validation.md` 的语义检查项、对照 `data/commands-index.json` 的命令语法自查，确认命令用法与对象类型匹配。
-   - 如发现错误，**修正后再重新验证**，直到 `ok == true`。将验证通过的指令和验证摘要一并输出。
+   - **⚠️ 必须如实告知教师的边界**：L1+L2 都是**静态**验证，只能保证「不会因低级错误卡住」，**不能保证「画出来的一定是你要的」**。下列内容静态手段覆盖不到，**必须实际执行确认**：
+     - GeoGebra 脚本（`SetValue`、`StartAnimation`、`OnClick` 等，属 GGBScript 语法）；自定义工具；`Locus` 轨迹；3D 曲面与交线（`Surface`/`IntersectPath`）；`Zip` 嵌套；依赖顺序敏感的构造。
+     - 执行途径（任选其一）：GeoGebra MCP（`eval_command` 执行 + `get_xml` 回读，需先启动服务）／[ggbgen.pages.dev](https://ggbgen.pages.dev/) 在线批量执行／导入本地 GeoGebra 人工确认。
+   - 如发现错误，**修正后再重新验证**，直到两道全过。将验证通过的指令和**双验证摘要**（L1 语法 0 错 N 警 + L2 语义 0 错）一并输出。
 
 ## 需求澄清指导原则
 
@@ -178,7 +186,7 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 4. GeoGebra 构造步骤；
 5. GeoGebra 指令代码（已通过验证）；
 6. 样式与显示建议；
-7. 验证清单一览；
+7. 双验证摘要（L1 语法 + L2 语义）与「静态验证能力边界」的说明；
 8. 可二次创作建议。
 
 ## .ggb 文件交付方式
@@ -208,6 +216,8 @@ GeoGebra manual adoc 目录: E:\软件学习\Geogebra资料\manual-main\en\modul
 
 ## 辅助数据文件
 
+- `scripts/validate_commands.py` — **L1 语法验证器**：括号配对、SetColor 0-1 范围、Text 的 `\n`、Slider 参数、命令拼写、未定义变量，输出 JSON 报告。
+- `scripts/validate_types.py` — **L2 语义（类型）验证器**：用 `data/commands-index.json` 的类型签名检查参数类型、矩阵维度、数值列表；与 L1 组成「双验证」。
 - `data/commands-index.json` — 约 500 条 GeoGebra 指令索引（名称、语法、说明、示例），供验证脚本与查询命令使用。
 - `data/zh-command-aliases.json` — 中文教学意图 → 英文 GeoGebra 命令的启发式映射，例如"切线/割线/斜率" → `Tangent, Line, Slope, Derivative, Segment`。
 - `references/course-routing.md` — 20 个高校数学主题路由表（典型变化 + 核心变量 + 常用指令）。
@@ -227,3 +237,14 @@ GeoGebra manual adoc 目录: E:\软件学习\Geogebra资料\manual-main\en\modul
 | 曲面/空间曲线/交线 | `Surface`, `Curve`, `IntersectPath`, `Plane` |
 | 线性变换/矩阵作用 | `ApplyMatrix`, `Vector`, `Polygon`, `Segment` |
 | 随机/分布/直方图 | `RandomDiscrete`, `Histogram`, `BarChart`, `BinomialDist`, `Poisson` |
+
+## 更新记录
+
+### v1.1
+- **新增 L2 语义验证器** `scripts/validate_types.py`：补上原「仅校验语法」的盲区，检查参数类型不匹配、矩阵维度错配、对几何对象列表求和。第 8 步升级为 **L1 语法 + L2 语义「双验证」**。
+- **修复误报**：`BUILTIN_WORDS` 补入 GeoGebra 内置函数名（`sin`/`cos`/`exp`/`ln`/`sqrt`/`abs`/`min` 等），此前 `f(x) = sin(x)` 会被误判为「变量 sin 使用前未定义」。
+- 明确「静态验证的能力边界」：脚本覆盖不到 GeoGebra 脚本、自定义工具、`Locus`、3D 曲面交线等，这类必须实际执行确认。
+- 修正 `SKILL_DIR` 与 Python 解释器说明（兼容 WorkBuddy 与 opencode 两个安装位置；脚本改为按自身位置自动定位 `data/commands-index.json`）。
+
+### v1.0
+- 首个 Claude Code 移植版；三层递进工作流 + `validate_commands.py` 语法验证。
