@@ -61,3 +61,12 @@
 4. 回读验证：脚本数量（geogebra.xml 中 ggbscript）、对象清单、脚本语句可执行性。
 
 > 完整样例：`tools/ggb-export/example-buttons.txt` ＋ `example-buttons.scripts.json`（割线演示 + 重置/换点按钮）。
+
+## 7. 按钮定位
+
+按钮默认会堆叠在同一位置（互相遮挡）。用 `SetCoords(btnReset, x, y)` 设置像素位置（以画布左上角为原点）。该脚本命令返回值照例不可信（false），但效果真实生效——导出器已内置 `labelOffset` 核验：
+
+```
+SetCoords(btnReset, 40, 80)
+SetCoords(btnRand, 40, 140)
+```

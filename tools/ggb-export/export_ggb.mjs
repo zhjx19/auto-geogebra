@@ -183,6 +183,27 @@ async function main() {
           try { lv = window.ggbApplet.getLabelVisible(args[0]); } catch (e) {}
           return { ok: lv === (args[1] === "true"), note: "ShowLabel 核验：实际=" + lv };
         }
+        if (fname === "SetCoords" && args.length >= 3) {
+          var x2 = null, y2 = null;
+          try {
+            var xml3 = window.ggbApplet.getXML();
+            var pos3 = xml3.indexOf('label="' + args[0] + '"');
+            if (pos3 >= 0) {
+              var seg3 = xml3.slice(pos3, pos3 + 4000);
+              var e3 = seg3.indexOf("</element>");
+              if (e3 >= 0) seg3 = seg3.slice(0, e3);
+              var lo3 = seg3.indexOf("<labelOffset");
+              if (lo3 >= 0) {
+                var part3 = seg3.slice(lo3, lo3 + 90);
+                var xm3 = part3.match(/x="([-0-9.]+)"/);
+                var ym3 = part3.match(/y="([-0-9.]+)"/);
+                if (xm3) x2 = xm3[1];
+                if (ym3) y2 = ym3[1];
+              }
+            }
+          } catch (e) {}
+          return { ok: x2 !== null && Math.abs(parseFloat(x2) - parseFloat(args[1])) < 0.5 && Math.abs(parseFloat(y2) - parseFloat(args[2])) < 0.5, note: "SetCoords 核验：labelOffset=(" + x2 + "," + y2 + ")" };
+        }
         return null;
       }
       function isScriptish(cmd){
@@ -210,9 +231,26 @@ async function main() {
         }
         var names = window.ggbApplet.getAllObjectNames();
         var soft = null;
-        var m = cmd.match(/^\s*([A-Za-z_]\w*)\s*(\([^)]*\))?\s*=/);
-        if (ok && !scriptUnverified && m) {
-          var base = m[1];
+        var base = null;
+        var s0 = cmd.trim();
+        var k0 = 0;
+        while (k0 < s0.length && /[0-9A-Za-z_]/.test(s0.charAt(k0))) k0++;
+        if (k0 > 0) {
+          var j0 = k0;
+          while (j0 < s0.length && s0.charAt(j0) === " ") j0++;
+          if (s0.charAt(j0) === "(") {
+            var depth0 = 0;
+            while (j0 < s0.length) {
+              var ch0 = s0.charAt(j0);
+              if (ch0 === "(") depth0++;
+              else if (ch0 === ")") { depth0--; if (depth0 === 0) { j0++; break; } }
+              j0++;
+            }
+            while (j0 < s0.length && s0.charAt(j0) === " ") j0++;
+          }
+          if (s0.charAt(j0) === "=") base = s0.slice(0, k0);
+        }
+        if (ok && !scriptUnverified && base) {
           var created = names.length > prev.length || names.indexOf(base) >= 0 || names.some(function(n){ return n.indexOf(base) === 0; });
           if (!created) soft = "命令返回成功但未创建对象（疑似保留名冲突/退化构造）";
         }
