@@ -3,7 +3,7 @@ name: geogebra
 description: Use when 普通高校数学教师需要把教学创意转化为 GeoGebra 动态演示/课件/动画，或需要设计交互变量、滑块、构造步骤、生成 GeoGebra 指令或 .ggb 文件（涉及《高等数学》《线性代数》《概率论与数理统计》及数学专业课程）。
 metadata:
   author: 张敬信 (zhjx19)
-  version: "1.2"
+  version: "1.3"
   source: autos.skills.geogebra v0.3.1 (aardio Autos skill)
 license: MIT
 ---
@@ -76,7 +76,7 @@ license: MIT
 
    | 层 | 检查内容 | 通过标准 |
    |---|---|---|
-   | L1 语法 | 括号配对、SetColor 0-1 范围、Text 的 `\n`、Slider 参数、命令拼写、未定义变量 | `ok == true` |
+   | L1 语法 | 括号配对、SetColor 0-1 范围、Text 的 `\n`、Slider 参数、命令拼写、未定义变量、命名规则与使用顺序（v1.3 新增） | `ok == true` |
    | L2 语义 | 参数类型不匹配、矩阵维度错配、对几何对象列表求和 | `semanticErrors == 0` |
 
    - `<SKILL_DIR>` 为本技能所在目录（WorkBuddy：`C:\Users\zhang\.workbuddy\skills\geogebra`；opencode：`C:\Users\zhang\.config\opencode\skills\geogebra`；OpenClaw/AutoClaw：`C:\Users\zhang\.openclaw-autoclaw\skills\geogebra`）。脚本按自身位置自动定位 `data/commands-index.json`，无需额外传参；并自动处理 UTF-8 BOM 与 GBK/GB18030 编码的指令文件与管道输入。
@@ -84,7 +84,7 @@ license: MIT
    - **备选（人工规则）**：按 [references/command-validation.md](references/command-validation.md) 的检查清单逐项自查。
    - **⚠️ 必须如实告知教师的边界**：L1+L2 都是**静态**验证，只能保证「不会因低级错误卡住」，**不能保证「画出来的一定是你要的」**。下列内容静态手段覆盖不到，**必须实际执行确认**：
      - GeoGebra 脚本（`SetValue`、`StartAnimation`、`OnClick` 等，属 GGBScript 语法）；自定义工具；`Locus` 轨迹；3D 曲面与交线（`Surface`/`IntersectPath`）；`Zip` 嵌套；依赖顺序敏感的构造。
-     - 执行途径（任选其一）：GeoGebra MCP（`eval_command` 执行 + `get_xml` 回读，需先启动服务）／[ggbgen.pages.dev](https://ggbgen.pages.dev/) 在线批量执行／导入本地 GeoGebra 人工确认。
+     - 执行途径（任选其一）：本技能自带真机导出工具 `tools/ggb-export`（推荐，含逐条核验与回读校验）／GeoGebra MCP（`eval_command` 执行 + `get_xml` 回读，需先启动服务）／[ggbgen.pages.dev](https://ggbgen.pages.dev/) 在线批量执行／导入本地 GeoGebra 人工确认。
    - 如发现错误，**修正后再重新验证**，直到两道全过。将验证通过的指令和**双验证摘要**（L1 语法 0 错 N 警 + L2 语义 0 错）一并输出。
 
 ## 需求澄清指导原则
@@ -191,14 +191,21 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 
 ## .ggb 文件交付方式
 
-本技能不直接生成 .ggb 文件。标准交付方式：
+验证通过后，用以下方式之一完成「指令 → .ggb」：
 
-1. **🔴 先验证**：按上文"第 8 步指令验证"执行（脚本验证或人工自查），确认 `ok == true` 后再继续。
-2. 验证通过后，将指令复制到 [https://ggbgen.pages.dev/](https://ggbgen.pages.dev/) 的 **GGB 脚本** 文本区。
-3. 点击 **批量执行** 按钮，GeoGebra 画布中即显示完整动态演示。
-4. 点击页面右上角工具栏中倒数第二个图标（下载按钮），即可保存 .ggb 文件到本地。
+**方式 A（推荐）：本机真机导出** —— 使用本技能自带工具，在本地无头浏览器中调用官方 GeoGebra 引擎，逐条执行指令、逐条核验并导出 .ggb：
 
-> **无外网时的备选**：ggbgen.pages.dev 是在线工具。离线环境下改为交付「指令文本 + 教师使用说明」，并在输出中注明"待联网后在 ggbgen.pages.dev 导入生成 .ggb"；不要虚构已生成 .ggb 文件。
+- 环境：Node 18+、本机 Chrome 或 Edge（引擎首次需联网加载；无需任何 npm 包）。
+- 命令：
+  ```
+  node "<SKILL_DIR>\tools\ggb-export\export_ggb.mjs" --page "<SKILL_DIR>\tools\ggb-export\page.html" --cmds "<指令文件>" --out "<输出.ggb>" [--png "<预览.png>"]
+  ```
+- 工具会做三项核验：对象创建、数值正确、样式生效，并对导出文件回读校验；退出码 0 才视为成功。
+- 真机执行是静态验证之外的**第三层保险**：引擎会暴露静态验证看不见的问题（小写名坐标=向量、`sec`/`tan` 等保留名被改名、退化初值静默不创建等）。详见 `tools/ggb-export/README.md`。
+
+**方式 B：在线批量执行**（无本机环境时）—— 将指令复制到 [https://ggbgen.pages.dev/](https://ggbgen.pages.dev/) 的 **GGB 脚本** 文本区 → 点击 **批量执行** → 点击页面右上角工具栏中倒数第二个图标（下载按钮），即可保存 .ggb 文件到本地。
+
+> **无外网时的备选**：改为交付「指令文本 + 教师使用说明」，并在输出中注明“待联网后在 ggbgen.pages.dev 导入生成 .ggb”；不要虚构已生成 .ggb 文件。
 
 ## 创作模式库（按需读取）
 
@@ -218,7 +225,9 @@ GeoGebra manual adoc 目录: E:\软件学习\Geogebra资料\manual-main\en\modul
 
 - `scripts/validate_commands.py` — **L1 语法验证器**：括号配对、SetColor 0-1 范围、Text 的 `\n`、Slider 参数、命令拼写、未定义变量，输出 JSON 报告。
 - `scripts/validate_types.py` — **L2 语义（类型）验证器**：用 `data/commands-index.json` 的类型签名检查参数类型、矩阵维度、数值列表；与 L1 组成「双验证」。
-- `scripts/smoke_test.py` — **回归冒烟测试**：好样例 ×3、埋错样例（9 类）、stdin/BOM/GBK 编码边界共 13 项检查一键复跑；改动验证器后必须全绿（维护者用）。
+- `scripts/smoke_test.py` — **回归冒烟测试**：好样例 ×3、埋错样例（9 类）、stdin/BOM/GBK 编码边界、命名规则、使用顺序共 15 项检查一键复跑；改动验证器后必须全绿（维护者用）。
+- `scripts/build_index.py` — **指令索引重建工具**：从本机 GeoGebra manual（asciidoc）重建 `data/commands-index.json`，支持 `--compare` 与现有索引做字段级对照（维护者用）。
+- `tools/ggb-export/` — **真机导出工具**：零依赖 Node 脚本，调用官方引擎把指令导出为 .ggb 并逐条核验（用法见其 README）。
 - `data/commands-index.json` — 约 500 条 GeoGebra 指令索引（名称、语法、说明、示例），供验证脚本与查询命令使用。
 - `data/zh-command-aliases.json` — 中文教学意图 → 英文 GeoGebra 命令的启发式映射，例如"切线/割线/斜率" → `Tangent, Line, Slope, Derivative, Segment`。
 - `references/course-routing.md` — 20 个高校数学主题路由表（典型变化 + 核心变量 + 常用指令）。
@@ -240,6 +249,13 @@ GeoGebra manual adoc 目录: E:\软件学习\Geogebra资料\manual-main\en\modul
 | 随机/分布/直方图 | `RandomDiscrete`, `Histogram`, `BarChart`, `BinomialDist`, `Poisson` |
 
 ## 更新记录
+
+### v1.3
+- **新增真机导出工具** `tools/ggb-export/`：本地无头浏览器 + 官方 GeoGebra 引擎，逐条执行 → 核验（对象 / 数值 / 样式）→ 导出 .ggb + 预览图 → 回读校验。零 npm 依赖（Node 18+ / Chrome 或 Edge）。
+- **L1 验证器增强**：新增「命名规则」提醒（保留名 `sec`/`tan` 等会被引擎改名；`pt1 = (0, 0)` 小写坐标名会创建为向量）与「使用顺序」检查（先使用后定义提示）——规则来自真机实测。
+- **回归套件扩展**：`smoke_test.py` 升级至 15 项（新增命名规则、使用顺序用例）。
+- **新增指令索引重建工具** `scripts/build_index.py`：从本机 manual 重建 `data/commands-index.json`（支持 `--compare` 对照评估）。
+- 交付节更新：新增「方式 A：本机真机导出」；ggbgen.pages.dev 保留为方式 B。
 
 ### v1.2
 - **验证器输入健壮性（鲁班打磨）**：两脚本新增统一「稳健读取」——自动剥离 UTF-8 BOM 字节、utf-8 优先解码、失败回退 gb18030。
