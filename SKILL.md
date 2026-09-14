@@ -1,9 +1,9 @@
 ---
 name: auto-geogebra
-description: Use when 普通高校数学教师需要把教学创意转化为 GeoGebra 动态演示/课件/动画，或需要设计交互变量、滑块、构造步骤、生成 GeoGebra 指令或 .ggb 文件（涉及《高等数学》《线性代数》《概率论与数理统计》及数学专业课程）。
+description: Use when 需要把高校数学教学创意转化为可运行的 GeoGebra 动态演示/课件/动画：设计交互变量与滑块、生成并验证 GeoGebra 指令、导出 .ggb 文件（覆盖《高等数学》《线性代数》《概率论与数理统计》与数学专业课程）。触发词：GeoGebra 演示、ggb 课件、动态演示制作、滑块与参数设计、指令校验、导数/积分/线性变换/概率模拟类演示等。不要用于非数学教学用途，也不替代教师自己的教学设计。
 metadata:
   author: 张敬信 (zhjx19)
-  version: "1.4"
+  version: "1.4.1"
   source: autos.skills.geogebra v0.3.1 (aardio Autos skill)
 license: MIT
 ---
@@ -38,7 +38,7 @@ license: MIT
 
 > 完成标准（第零层）：需求确认单同时包含「已识别信息」与「⚠️ 待确认问题」两类内容，且所有待确认问题都已获得教师明确答复。任一条件不满足，不得进入下一层。
 
-> 已有固化的课程主题路由表可作为参考：[references/course-routing.md](references/course-routing.md)（包含 20 个高校数学主题的「典型变化 + 核心变量 + 常用指令」）。若主题不在表中，直接基于数学知识分析。
+> 已有固化的课程主题路由表可作为参考：[references/course-routing.md](references/course-routing.md)（包含 28 个高校数学主题的「典型变化 + 核心变量 + 常用指令」）。若主题不在表中，直接基于数学知识分析。
 
 ### 第一层：定性意图（想看到什么变化）
 
@@ -79,8 +79,8 @@ license: MIT
    | L1 语法 | 括号配对、SetColor 0-1 范围、Text 的 `\n`、Slider 参数、命令拼写、未定义变量、命名规则、使用顺序与退化预检（v1.3+） | `ok == true` |
    | L2 语义 | 参数类型不匹配、矩阵维度错配、对几何对象列表求和 | `semanticErrors == 0` |
 
-   - `<SKILL_DIR>` 为本技能所在目录（WorkBuddy：`C:\Users\zhang\.workbuddy\skills\auto-geogebra`；opencode：`C:\Users\zhang\.config\opencode\skills\auto-geogebra`；OpenClaw/AutoClaw：`C:\Users\zhang\.openclaw-autoclaw\skills\auto-geogebra`）。脚本按自身位置自动定位 `data/commands-index.json`，无需额外传参；并自动处理 UTF-8 BOM 与 GBK/GB18030 编码的指令文件与管道输入。
-     > 若 `python` 不在 PATH 中，本机 Python 解释器为 `D:\py_base_env\.venv\Scripts\python.exe`（**仅本机参考**），可替换命令中的 `python`。
+   - `<SKILL_DIR>` 为本技能所在目录（Windows 下 `~` 即 `C:\Users\<你的用户名>`；WorkBuddy：`~/.workbuddy/skills/auto-geogebra`；opencode：`~/.config/opencode/skills/auto-geogebra`；OpenClaw/AutoClaw：`~/.openclaw-autoclaw/skills/auto-geogebra`）。脚本按自身位置自动定位 `data/commands-index.json`，无需额外传参；并自动处理 UTF-8 BOM 与 GBK/GB18030 编码的指令文件与管道输入。
+     > 若 `python` 不在 PATH 中，请将命令中的 `python` 替换为你本机的 Python 解释器完整路径。
    - **备选（人工规则）**：按 [references/command-validation.md](references/command-validation.md) 的检查清单逐项自查。
    - **⚠️ 必须如实告知教师的边界**：L1+L2 都是**静态**验证，只能保证「不会因低级错误卡住」，**不能保证「画出来的一定是你要的」**。下列内容静态手段覆盖不到，**必须实际执行确认**：
      - GeoGebra 脚本（`SetValue`、`StartAnimation`、`OnClick` 等，属 GGBScript 语法）与按钮：**基础支持已开通**（`Button` 创建 + `ggb_patch.py` 脚本注入 + 回读核验，见 `references/interaction-patterns.md`）；复杂脚本、`onUpdate` 动画驱动、自定义工具、`Locus` 轨迹、3D 曲面与交线、`Zip` 嵌套仍建议导入 GeoGebra 实跑确认。
@@ -216,11 +216,8 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 
 以下为本机信息，仅用于本技能开发时的辅助工作（如更新指令索引）。**随技能分发给其他机器时不适用**，使用前需按实际环境修改。
 
-```text
-GeoGebra 程序: D:\Program Files\GeoGebra 5.4\Geogebra.exe
-GeoGebra manual adoc 目录: E:\软件学习\Geogebra资料\manual-main\en\modules\ROOT\pages
-（manual 用于构建指令索引；若需要可更新 data/commands-index.json）
-```
+- 真机导出（`tools/ggb-export`）：本机 Chrome/Edge + Node 18+ 即可（首次联网加载官方引擎）；
+- 重建 `data/commands-index.json`：需要 GeoGebra manual 的 asciidoc 源码（[GeoGebra/manual](https://github.com/GeoGebra/manual)），把路径传给 `scripts/build_index.py`。
 
 ## 辅助数据文件
 
@@ -233,7 +230,7 @@ GeoGebra manual adoc 目录: E:\软件学习\Geogebra资料\manual-main\en\modul
 - `references/interaction-patterns.md` — **交互增强模式库**：重置按钮、重抽、开始/停止对（动画 + speed 变量 + onUpdate）、累积按钮、输入框参数。
 - `data/commands-index.json` — 约 500 条 GeoGebra 指令索引（名称、语法、说明、示例），供验证脚本与查询命令使用。
 - `data/zh-command-aliases.json` — 中文教学意图 → 英文 GeoGebra 命令的启发式映射，例如"切线/割线/斜率" → `Tangent, Line, Slope, Derivative, Segment`。
-- `references/course-routing.md` — 20 个高校数学主题路由表（典型变化 + 核心变量 + 常用指令）。
+- `references/course-routing.md` — 28 个高校数学主题路由表（典型变化 + 核心变量 + 常用指令）。
 - `references/command-validation.md` — 指令静态验证检查清单（括号配对、SetColor 颜色、Slider 参数、Text 换行、未知命令、未定义变量等）。
 - `references/patterns.md` — 6 大教学创作模式库（逼近、局部线性化、面积/体积、参数曲线曲面、线性变换、随机模拟）。
 - `references/workflow.md` — 教师创作工作流速查。
@@ -252,6 +249,11 @@ GeoGebra manual adoc 目录: E:\软件学习\Geogebra资料\manual-main\en\modul
 | 随机/分布/直方图 | `RandomDiscrete`, `Histogram`, `BarChart`, `BinomialDist`, `Poisson` |
 
 ## 更新记录
+
+### v1.4.1（2026-09-14 · 发布就绪）
+- **更名为 `auto-geogebra`**（原名 geogebra，避免与 GeoGebra 软件本体重名；Claude Code / Codex 软链接已同步）。
+- **发布包装补齐**：README、MIT LICENSE、`.claude-plugin/marketplace.json`、`examples/`（7 个真实示例）、`assets/`（演示 GIF + 生成脚本）。
+- **去个人化**：安装位路径改为 `~` 形式，移除本机专属路径；课程主题数与实际对齐（28 个）。
 
 ### v1.4
 - **交互增强（联学作者案例库 219+ 案后落地）**：
