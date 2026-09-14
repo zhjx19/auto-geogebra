@@ -1,0 +1,220 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""geogebra 双验证器 · 回归冒烟测试
+
+一键复跑 L1（语法）/ L2（语义）两支验证器在下列场景的既有行为：
+
+  1. 好样例 ×3     —— 期望 L1 ok=true 且 0 错 0 警；L2 0 语义错
+  2. 埋错样例 ×1   —— 期望 L1 命中 3 errors + 3 warnings；L2 命中 3 errors
+  3. stdin 管道    —— 带 UTF-8 BOM / GBK 字节流，期望零误报
+  4. 文件编码边界  —— UTF-8+BOM / GBK(ANSI) 文件，期望不崩溃、正常验证
+
+用法：
+    python scripts/smoke_test.py        # 跑全部用例，输出 PASS/FAIL 与汇总
+    python scripts/smoke_test.py -v     # 同时打印每个用例的原始输出
+
+退出码：0 = 全部通过；1 = 存在失败。改动验证器后必须全绿，否则回刀。
+"""
+import json
+import os
+import subprocess
+import sys
+import tempfile
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+PY = sys.executable
+L1 = os.path.join(HERE, "validate_commands.py")
+L2 = os.path.join(HERE, "validate_types.py")
+VERBOSE = "-v" in sys.argv or "--verbose" in sys.argv
+
+GOOD_CALC = r"""# 定积分矩形逼近演示——冒烟样例
+f(x) = sin(x)
+a = Slider(0, 3, 0.1)
+b = Slider(0, 3, 0.1)
+n = Slider(1, 50, 1)
+sumRect = RectangleSum(f, a, b, n, 0.25)
+realInt = Integral(f, a, b)
+txt1 = Text("\sum_{k=1}^{n} f(x_k) \Delta x = " + sumRect, (3.6, 2), true, true)
+txt2 = Text("实际积分值 = " + realInt, (3.6, 1.5), true, true)
+SetColor(sumRect, 0.2, 0.6, 1)
+SetColor(realInt, 1, 0.2, 0)
+ShowLabel(sumRect, false)
+"""
+
+GOOD_LINALG = r"""# 线性变换动态演示——冒烟样例
+a11 = Slider(-2, 2, 0.1)
+a12 = Slider(-2, 2, 0.1)
+a21 = Slider(-2, 2, 0.1)
+a22 = Slider(-2, 2, 0.1)
+M = {{a11, a12}, {a21, a22}}
+polyUnit = Polygon((-1, -1), (1, -1), (1, 1), (-1, 1))
+polyTrans = ApplyMatrix(M, polyUnit)
+detVal = Determinant(M)
+vec1 = Vector((0, 0), (a11, a12))
+txtDet = Text("det = " + detVal, (3, 3), true, true)
+SetColor(polyUnit, 0, 0, 1)
+SetColor(polyTrans, 1, 0.4, 0)
+ShowLabel(detVal, false)
+ShowLabel(vec1, false)
+"""
+
+GOOD_MORE = r"""# 导数定义演示——冒烟样例
+f(x) = x^3 - 3x + 1
+a = Slider(-2, 2, 0.1)
+h = Slider(-1, 1, 0.01)
+A = (a, f(a))
+B = (a + h, f(a + h))
+sec = Line(A, B)
+tan = Tangent(a, f)
+mSec = Slope(sec)
+mTan = Slope(tan)
+dTan = Derivative(f)
+distAB = Distance(A, B)
+txt = Text("割线斜率 = " + mSec, (3, 2), true, true)
+"""
+
+BAD_CASES = r"""# 埋错用例：覆盖 L1 与 L2 各类检查（期望全部命中）
+f(x) = x^2
+poly = Polygon((0, 0), (1, 0), (1, 1), (0, 1))
+P = Point(f)
+sl = Slope(P)
+m3 = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}
+polyBad = ApplyMatrix(m3, poly)
+rects = Sequence(Polygon((k, 0), (k + 0.5, 0), (k + 0.5, 1)), k, 0, 5)
+total = Sum(rects)
+txt = Text("第一行\n第二行", (1, 1))
+SetColor(poly, 0, 0, 255)
+s = Slider(5, 1, 0.1)
+bad = 3 + (2
+BadCommand(poly)
+zzz = qqq + 1
+"""
+
+CHECKS = 0
+FAILURES = []
+
+
+def check(name, cond, detail=""):
+    global CHECKS
+    CHECKS += 1
+    if cond:
+        print("PASS  " + name)
+    else:
+        print("FAIL  " + name + (("  ->  " + detail) if detail else ""))
+        FAILURES.append(name)
+
+
+def rules_of(items):
+    return sorted({it.get("rule") for it in items})
+
+
+def run(script, args=None, stdin_bytes=None):
+    cmd = [PY, script] + (list(args) if args else [])
+    common = dict(stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=HERE)
+    if stdin_bytes is None:
+        proc = subprocess.run(cmd, stdin=subprocess.DEVNULL, **common)
+    else:
+        proc = subprocess.run(cmd, input=stdin_bytes, **common)
+    out = proc.stdout.decode("utf-8", "replace")
+    err = proc.stderr.decode("utf-8", "replace")
+    if VERBOSE:
+        sys.stdout.write("    raw: " + out.replace("\n", " ")[:240] + "\n")
+        if err.strip():
+            sys.stdout.write("    err: " + err.replace("\n", " ")[:240] + "\n")
+    try:
+        return json.loads(out)
+    except Exception:
+        return None
+
+
+def main():
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+    print("geogebra 双验证器 · 冒烟测试（脚本目录：%s）\n" % HERE)
+
+    with tempfile.TemporaryDirectory(prefix="ggb-smoke-") as tmp:
+        # ---------- 好样例 ×3 ----------
+        for fname, content in (("good_calc.txt", GOOD_CALC),
+                               ("good_linalg.txt", GOOD_LINALG),
+                               ("good_more.txt", GOOD_MORE)):
+            path = os.path.join(tmp, fname)
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(content)
+            rep = run(L1, [path])
+            check("L1 好样例 %s：ok=true 且 0 错 0 警" % fname,
+                  bool(rep) and rep.get("ok") is True
+                  and not rep.get("errors") and not rep.get("warnings"),
+                  json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
+            rep = run(L2, [path])
+            check("L2 好样例 %s：0 语义错" % fname,
+                  bool(rep) and rep.get("semanticErrors") == 0,
+                  json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
+
+        # ---------- 埋错样例 ×1 ----------
+        bad = os.path.join(tmp, "bad_cases.txt")
+        with open(bad, "w", encoding="utf-8") as f:
+            f.write(BAD_CASES)
+        rep = run(L1, [bad])
+        check("L1 埋错样例：3 errors + 3 warnings 且规则齐全",
+              bool(rep) and rep.get("ok") is False
+              and len(rep.get("errors", [])) == 3
+              and len(rep.get("warnings", [])) == 3
+              and set(rules_of(rep.get("errors", []))) ==
+                  {"text-backslash-n", "slider-range", "unbalanced-parentheses"}
+              and set(rules_of(rep.get("warnings", []))) ==
+                  {"setcolor-range", "unknown-command", "undefined-variable"},
+              json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
+        rep = run(L2, [bad])
+        check("L2 埋错样例：3 语义错且规则齐全",
+              bool(rep) and rep.get("semanticErrors") == 3
+              and set(rules_of(rep.get("errors", []))) ==
+                  {"arg-type", "matrix-dim", "numeric-list"},
+              json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
+
+        # ---------- stdin：UTF-8+BOM / GBK 字节流 ----------
+        stdin_ascii = "a = Slider(-1, 1, 0.1)\ncircle = Circle((0, 0), a)\n"
+        rep = run(L1, stdin_bytes=b"\xef\xbb\xbf" + stdin_ascii.encode("utf-8"))
+        check("stdin 带 UTF-8 BOM：L1 ok=true 且零误报",
+              bool(rep) and rep.get("ok") is True
+              and not rep.get("errors") and not rep.get("warnings"),
+              json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
+        stdin_gbk = "# 中文注释\na = Slider(-1, 1, 0.1)\ncircle = Circle((0, 0), a)\n"
+        rep = run(L1, stdin_bytes=stdin_gbk.encode("gb18030"))
+        check("stdin 为 GBK 字节流（含中文）：L1 ok=true 且零误报",
+              bool(rep) and rep.get("ok") is True
+              and not rep.get("errors") and not rep.get("warnings"),
+              json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
+
+        # ---------- 文件编码边界 ----------
+        gbk_path = os.path.join(tmp, "gbk_file.txt")
+        with open(gbk_path, "wb") as f:
+            f.write("# 定积分演示\nf(x) = x^2\na = Slider(-1, 1, 0.1)\n".encode("gb18030"))
+        rep = run(L1, [gbk_path])
+        check("GBK(ANSI) 文件：L1 不崩溃且 ok=true",
+              bool(rep) and rep.get("ok") is True,
+              json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
+        rep = run(L2, [gbk_path])
+        check("GBK(ANSI) 文件：L2 不崩溃且 0 语义错",
+              bool(rep) and rep.get("semanticErrors") == 0,
+              json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
+        bom_path = os.path.join(tmp, "bom_file.txt")
+        with open(bom_path, "wb") as f:
+            f.write(b"\xef\xbb\xbf" + "# BOM 样例\na = Slider(-1, 1, 0.1)\n".encode("utf-8"))
+        rep = run(L1, [bom_path])
+        check("UTF-8+BOM 文件：L1 ok=true 且零误报",
+              bool(rep) and rep.get("ok") is True and not rep.get("warnings"),
+              json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
+
+    print("\n----- 汇总 -----")
+    print("共 %d 项检查，失败 %d 项" % (CHECKS, len(FAILURES)))
+    if FAILURES:
+        for name in FAILURES:
+            print("  [FAIL] " + name)
+        sys.exit(1)
+    print("SMOKE OK：全部通过。")
+
+
+if __name__ == "__main__":
+    main()

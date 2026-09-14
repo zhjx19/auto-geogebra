@@ -3,7 +3,7 @@ name: geogebra
 description: Use when 普通高校数学教师需要把教学创意转化为 GeoGebra 动态演示/课件/动画，或需要设计交互变量、滑块、构造步骤、生成 GeoGebra 指令或 .ggb 文件（涉及《高等数学》《线性代数》《概率论与数理统计》及数学专业课程）。
 metadata:
   author: 张敬信 (zhjx19)
-  version: "1.1"
+  version: "1.2"
   source: autos.skills.geogebra v0.3.1 (aardio Autos skill)
 license: MIT
 ---
@@ -79,7 +79,7 @@ license: MIT
    | L1 语法 | 括号配对、SetColor 0-1 范围、Text 的 `\n`、Slider 参数、命令拼写、未定义变量 | `ok == true` |
    | L2 语义 | 参数类型不匹配、矩阵维度错配、对几何对象列表求和 | `semanticErrors == 0` |
 
-   - `<SKILL_DIR>` 为本技能所在目录（WorkBuddy：`C:\Users\zhang\.workbuddy\skills\geogebra`；opencode：`C:\Users\zhang\.config\opencode\skills\geogebra`）。脚本按自身位置自动定位 `data/commands-index.json`，无需额外传参。
+   - `<SKILL_DIR>` 为本技能所在目录（WorkBuddy：`C:\Users\zhang\.workbuddy\skills\geogebra`；opencode：`C:\Users\zhang\.config\opencode\skills\geogebra`；OpenClaw/AutoClaw：`C:\Users\zhang\.openclaw-autoclaw\skills\geogebra`）。脚本按自身位置自动定位 `data/commands-index.json`，无需额外传参；并自动处理 UTF-8 BOM 与 GBK/GB18030 编码的指令文件与管道输入。
      > 若 `python` 不在 PATH 中，本机 Python 解释器为 `D:\py_base_env\.venv\Scripts\python.exe`（**仅本机参考**），可替换命令中的 `python`。
    - **备选（人工规则）**：按 [references/command-validation.md](references/command-validation.md) 的检查清单逐项自查。
    - **⚠️ 必须如实告知教师的边界**：L1+L2 都是**静态**验证，只能保证「不会因低级错误卡住」，**不能保证「画出来的一定是你要的」**。下列内容静态手段覆盖不到，**必须实际执行确认**：
@@ -218,6 +218,7 @@ GeoGebra manual adoc 目录: E:\软件学习\Geogebra资料\manual-main\en\modul
 
 - `scripts/validate_commands.py` — **L1 语法验证器**：括号配对、SetColor 0-1 范围、Text 的 `\n`、Slider 参数、命令拼写、未定义变量，输出 JSON 报告。
 - `scripts/validate_types.py` — **L2 语义（类型）验证器**：用 `data/commands-index.json` 的类型签名检查参数类型、矩阵维度、数值列表；与 L1 组成「双验证」。
+- `scripts/smoke_test.py` — **回归冒烟测试**：好样例 ×3、埋错样例（9 类）、stdin/BOM/GBK 编码边界共 13 项检查一键复跑；改动验证器后必须全绿（维护者用）。
 - `data/commands-index.json` — 约 500 条 GeoGebra 指令索引（名称、语法、说明、示例），供验证脚本与查询命令使用。
 - `data/zh-command-aliases.json` — 中文教学意图 → 英文 GeoGebra 命令的启发式映射，例如"切线/割线/斜率" → `Tangent, Line, Slope, Derivative, Segment`。
 - `references/course-routing.md` — 20 个高校数学主题路由表（典型变化 + 核心变量 + 常用指令）。
@@ -239,6 +240,13 @@ GeoGebra manual adoc 目录: E:\软件学习\Geogebra资料\manual-main\en\modul
 | 随机/分布/直方图 | `RandomDiscrete`, `Histogram`, `BarChart`, `BinomialDist`, `Poisson` |
 
 ## 更新记录
+
+### v1.2
+- **验证器输入健壮性（鲁班打磨）**：两脚本新增统一「稳健读取」——自动剥离 UTF-8 BOM 字节、utf-8 优先解码、失败回退 gb18030。
+  - 修复：从 PowerShell/管道传入带 BOM 流时，BOM 被按本地编码吞成汉字、首行变量名被吃掉，产生的假「未定义变量」警告；
+  - 修复：记事本另存 ANSI（GBK/GB18030）的指令文件导致 `UnicodeDecodeError` 崩溃；
+  - 索引定位统一为多候选探测（同技能 → 同工作区 → WorkBuddy / opencode / OpenClaw 安装位）。
+- **新增回归套件** `scripts/smoke_test.py`：好样例、9 类埋错、stdin/BOM/GBK 边界共 13 项检查一键复跑（改动验证器后必跑）。
 
 ### v1.1
 - **新增 L2 语义验证器** `scripts/validate_types.py`：补上原「仅校验语法」的盲区，检查参数类型不匹配、矩阵维度错配、对几何对象列表求和。第 8 步升级为 **L1 语法 + L2 语义「双验证」**。
