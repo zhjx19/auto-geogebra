@@ -1,0 +1,42 @@
+# ggb-export —— 指令脚本 → .ggb 真机导出（零依赖）
+
+把「已验证的 GeoGebra 指令脚本」导出为**可双击打开**的 .ggb 文件（技能交付方式 A，推荐；无本机环境时用 ggbgen.pages.dev，方式 B）。
+
+原理：本地 Chrome/Edge 无头实例 + 官方 GeoGebra 引擎（deployggb.js）
+→ 逐条 `evalCommand` → 逐条核验（对象创建 / 数值 / 样式）→ `getBase64()` 取 .ggb → 回读校验 → 落盘（可附带画布预览图）。
+
+## 依赖
+
+- Node 18+（使用全局 fetch / WebSocket，**无第三方 npm 依赖**）
+- 本机 Chrome 或 Edge（自动探测常见路径；可用 `--browser` 指定）
+- 首次运行需联网加载官方引擎（geogebra.org CDN）
+
+## 用法
+
+```bash
+node export_ggb.mjs --page page.html --cmds <指令文件> --out <输出.ggb> [--png <预览.png>]
+```
+
+退出码：`0` 全过 ｜ `1` 运行失败 ｜ `2` 有指令未通过（failedList）｜ `3` 有软失败（返回成功但未创建对象）
+
+可选参数：`--trace`（逐条追踪对象创建）、`--timeout 毫秒`、`--headful`（调试显示浏览器窗口）、`--browser <路径>`。
+
+输出 JSON 报告：每条命令结果、脚本命令核验记录（verifiedNotes）、对象数对比、回读校验结论。
+
+## 文件说明
+
+| 文件 | 用途 |
+|---|---|
+| `page.html` | 引擎挂载页（加载官方 deployggb.js 并暴露 `window.ggbApplet`） |
+| `export_ggb.mjs` | 导出器（零依赖 CDP 驱动；含脚本命令效果核验） |
+| `verify_ggb.py` | .ggb 结构校验（ZIP 内容 / geogebra.xml 元素统计 / 命令调用数） |
+| `example-tangent.txt` | 示例指令：导数定义（割线逼近切线），已验证真机通过 |
+
+## 已固化的真机规则（引擎实测经验，v1.3）
+
+1. **小写名坐标 = 向量**：`pt1 = (0, 0)` 被创建为 `vector`，`Line(pt1, pt2)` 失败；点请用大写名或 `Point(...)`。
+2. **保留名被自动改名**：`sec = ...` → `sec_{1}`，之后按原名引用失败；避免与内置函数完全同名的对象名（`sec`/`tan`/`sin`/`cos`/`ln`…）。
+3. **退化初值静默不创建**：`h = Slider(-1, 1, 0.01)` 初始值为 0 时 `A`、`B` 重合，`Line(A, B)` 返回“成功”却**不创建任何对象**；先 `SetValue(h, 0.5)` 设非零初值。
+4. **脚本命令返回值不可信**：`SetValue` / `SetColor` / `ShowLabel` 的 `evalCommand` 恒返回 false，但效果真实生效；导出器内置 getter 核验（`getValue` / `getColor` / `getLabelVisible`）。
+
+其中规则 1、2 已沉淀为 L1 验证器的静态提醒（v1.3）；规则 3、4 由本工具在真机执行时自动检出/核验。
