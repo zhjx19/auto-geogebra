@@ -5,7 +5,7 @@ metadata:
   author: 张敬信 (zhjx19)
   version: "1.4.1"
   source: autos.skills.geogebra v0.3.1 (aardio Autos skill)
-license: MIT
+license: Apache-2.0
 ---
 
 # GeoGebra 动态演示创作助手
@@ -252,7 +252,7 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 
 ### v1.4.1（2026-09-14 · 发布就绪）
 - **更名为 `auto-geogebra`**（原名 geogebra，避免与 GeoGebra 软件本体重名；Claude Code / Codex 软链接已同步）。
-- **发布包装补齐**：README、MIT LICENSE、`.claude-plugin/marketplace.json`、`examples/`（7 个真实示例）、`assets/`（演示 GIF + 生成脚本）。
+- **发布包装补齐**：README、Apache-2.0 LICENSE、`.claude-plugin/marketplace.json`、`examples/`（7 个真实示例）、`assets/`（演示 GIF + 生成脚本）。
 - **去个人化**：安装位路径改为 `~` 形式，移除本机专属路径；课程主题数与实际对齐（28 个）。
 
 ### v1.4

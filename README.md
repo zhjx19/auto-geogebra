@@ -5,7 +5,7 @@
 > *「教学创意是一个念头，课堂上能用的是一个 .ggb——中间的每一步，这份技能都替你真机跑过了。」*
 
 [![Agent Skills](https://img.shields.io/badge/Agent%20Skills-auto--geogebra-blueviolet)](SKILL.md)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![smoke](https://img.shields.io/badge/smoke-22%20checks%20%2F%200%20FAIL-brightgreen)](scripts/smoke_test.py)
 [![skills.sh](https://skills.sh/b/zhjx19/auto-geogebra)](https://skills.sh/zhjx19/auto-geogebra)
 
@@ -167,7 +167,7 @@ python scripts/smoke_test.py     # 期望：22 项全过（含好样例、埋错
 
 ## License
 
-[MIT](LICENSE)
+[Apache License 2.0](LICENSE)
 
 ---
 
