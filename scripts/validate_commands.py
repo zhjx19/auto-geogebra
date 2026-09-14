@@ -16,7 +16,31 @@ import json
 import re
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-INDEX_PATH = os.path.join(SCRIPT_DIR, "..", "data", "commands-index.json")
+# 索引定位：按「同技能内 → 同工作区 → 各环境已安装位置」顺序探测，取第一个存在的
+INDEX_CANDIDATES = [
+    os.path.join(SCRIPT_DIR, "..", "data", "commands-index.json"),
+    os.path.join(SCRIPT_DIR, "..", "geogebra", "data", "commands-index.json"),
+    os.path.join(SCRIPT_DIR, "..", "..", "geogebra", "data", "commands-index.json"),
+    os.path.expanduser("~/.workbuddy/skills/geogebra/data/commands-index.json"),
+    os.path.expanduser("~/.config/opencode/skills/geogebra/data/commands-index.json"),
+    os.path.expanduser("~/.openclaw-autoclaw/skills/geogebra/data/commands-index.json"),
+]
+
+
+def read_text_smart(path=None):
+    """读取指令文本：剥 BOM 字节 → utf-8 优先 → 回退 gb18030；无路径则读 stdin。
+
+    Windows 场景：管道或文件常带 UTF-8 BOM，而 stdin 默认解码可能是 GBK，
+    直接把 BOM 按本地编码解码会吞成汉字并吃掉后一个字符，产生假「未定义变量」；
+    记事本另存为 ANSI（GBK/GB18030）的文件也会直接崩溃。此处统一兜底。
+    """
+    raw = open(path, "rb").read() if path else sys.stdin.buffer.read()
+    if raw.startswith(b"\xef\xbb\xbf"):
+        raw = raw[3:]
+    try:
+        return raw.decode("utf-8")
+    except UnicodeDecodeError:
+        return raw.decode("gb18030", errors="replace")
 
 # 旧名/常见误写 → 正确命令名的别名映射（与 zh-command-aliases.json 命名口径一致）
 COMMAND_ALIASES = {
@@ -89,8 +113,9 @@ ITERATOR_CMDS = {"Sequence", "Sum", "Product", "Zip", "KeepIf", "Filter", "Sort"
 
 def load_command_index():
     """加载 GeoGebra 指令索引（不强制）。"""
-    path = os.path.normpath(INDEX_PATH)
-    if not os.path.exists(path):
+    path = next((os.path.normpath(p) for p in INDEX_CANDIDATES
+                 if os.path.exists(os.path.normpath(p))), None)
+    if not path:
         return None
     try:
         with open(path, "r", encoding="utf-8") as f:
@@ -332,13 +357,11 @@ def main():
         if not os.path.exists(path):
             print(json.dumps({"ok": False, "errors": [{"rule": "file-not-found", "message": f"文件不存在：{path}"}], "warnings": [], "info": []}, ensure_ascii=False, indent=2))
             return
-        with open(path, "r", encoding="utf-8") as f:
-            text = f.read()
+        text = read_text_smart(path)
     else:
-        text = sys.stdin.read()
+        text = read_text_smart()
 
-    # Windows 写出的文本文件常带 UTF-8 BOM，不剥掉会让首行定义的对象
-    # （如 "a = Slider(...)"）被误判为"变量使用前未定义"
+    # 双保险：无论文件还是 stdin，最后再剥一次 BOM 字符
     text = text.lstrip("\ufeff")
 
     report = validate_commands(text)

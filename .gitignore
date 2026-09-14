@@ -1,3 +1,4 @@
 __pycache__/
 *.pyc
 .pytest_cache/
+_store_meta.json

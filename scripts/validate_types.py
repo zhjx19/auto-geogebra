@@ -33,7 +33,20 @@ INDEX_CANDIDATES = [
     os.path.join(HERE, "..", "..", "geogebra", "data", "commands-index.json"),    # <workspace>/x/scripts/
     os.path.expanduser("~/.workbuddy/skills/geogebra/data/commands-index.json"),
     os.path.expanduser("~/.config/opencode/skills/geogebra/data/commands-index.json"),
+    os.path.expanduser("~/.openclaw-autoclaw/skills/geogebra/data/commands-index.json"),
 ]
+
+
+def read_text_smart(path=None):
+    """读取指令文本：剥 BOM 字节 → utf-8 优先 → 回退 gb18030；无路径则读 stdin。"""
+    raw = open(path, "rb").read() if path else sys.stdin.buffer.read()
+    if raw.startswith(b"\xef\xbb\xbf"):
+        raw = raw[3:]
+    try:
+        return raw.decode("utf-8")
+    except UnicodeDecodeError:
+        return raw.decode("gb18030", errors="replace")
+
 
 # ---------- 真正的 GeoGebra 类型词（其余 <...> 一律视作参数名，不检查） ----------
 TYPE_WORDS = {
@@ -290,7 +303,7 @@ def main():
     except Exception:
         pass
     path = sys.argv[1] if len(sys.argv) > 1 else None
-    text = open(path, encoding='utf-8').read().lstrip('\ufeff') if path else sys.stdin.read()
+    text = read_text_smart(path).lstrip('\ufeff')
     errs = check(text)
     print(json.dumps({'semanticErrors': len(errs), 'errors': errs}, ensure_ascii=False, indent=2))
 
