@@ -226,7 +226,7 @@ GeoGebra manual adoc 目录: E:\软件学习\Geogebra资料\manual-main\en\modul
 
 - `scripts/validate_commands.py` — **L1 语法验证器**：括号配对、SetColor 0-1 范围、Text 的 `\n`、Slider 参数、命令拼写、未定义变量，输出 JSON 报告。
 - `scripts/validate_types.py` — **L2 语义（类型）验证器**：用 `data/commands-index.json` 的类型签名检查参数类型、矩阵维度、数值列表；与 L1 组成「双验证」。
-- `scripts/smoke_test.py` — **回归冒烟测试**：好样例 ×3、埋错样例（9 类）、stdin/BOM/GBK 编码边界、命名规则、使用顺序共 20 项检查一键复跑；改动验证器后必须全绿（维护者用）。
+- `scripts/smoke_test.py` — **回归冒烟测试**：好样例 ×3、埋错样例（9 类）、stdin/BOM/GBK 编码边界、命名规则、使用顺序共 22 项检查一键复跑；改动验证器后必须全绿（维护者用）。
 - `scripts/build_index.py` — **指令索引重建工具**：从本机 GeoGebra manual（asciidoc）重建 `data/commands-index.json`，支持 `--compare` 与现有索引做字段级对照（维护者用）。
 - `tools/ggb-export/` — **真机导出工具**：零依赖 Node 脚本，调用官方引擎把指令导出为 .ggb 并逐条核验（用法见其 README）。
 - `tools/ggb-export/ggb_patch.py` — **按钮/脚本注入器**：把 GGBScript 注入导出的 .ggb（按钮脚本无法经命令注入，真机实测）。
@@ -259,7 +259,7 @@ GeoGebra manual adoc 目录: E:\软件学习\Geogebra资料\manual-main\en\modul
   - 新增 `tools/ggb-export/ggb_patch.py`：为 .ggb 注入按钮/更新脚本（按钮脚本无法经命令注入，真机实测）；配套示例 `example-buttons.txt` ＋ `example-buttons.scripts.json`。
   - L2 验证器：新增 Button 专项处理（单参通过；二参给出"不受支持，请用 ggb_patch"提示）。
 - **课程路由扩展**：新增 9 个主题（参数曲线与极坐标曲线、二次曲面、三重积分与坐标变换、方向导数与梯度、弧长与曲率、施密特正交化、线性方程组的解、蒙特卡洛方法、相关与线性回归）。
-- **回归套件扩至 20 项**（新增按钮两例）。
+- **回归套件扩至 22 项**（按钮两例、嵌套迭代豁免、引擎支持命令 `Random` 识别）。
 
 ### v1.3.1
 - **L1 追加两组提醒**：退化构造预检（启发式：范围含 0 且未被 SetValue 固定的滑块参与两点构造、代换为 0 后两点重合时提示）、内置常量名提醒（`e`/`pi` 作对象名——真机实测：`e = 5` 会遮蔽内置常量、`pi = 3` 会被解析为方程对象）。

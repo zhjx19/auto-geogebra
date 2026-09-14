@@ -13,6 +13,8 @@
   7. 退化构造预检  —— 零值滑块参与两点构造时的提示与抑制（v1.3.1）
   8. 内置常量名    —— e / pi 作对象名的提醒（v1.3.1）
   9. 按钮样例      —— 单参 Button 不误报；二参 Button 提示 button-script（v1.4）
+ 10. 嵌套迭代      —— Polygon(Sequence(…, k, …)) 不误报（v1.4a）
+ 11. 引擎命令      —— Random 识别（v1.4.2）
 
 用法：
     python scripts/smoke_test.py        # 跑全部用例，输出 PASS/FAIL 与汇总
@@ -141,6 +143,15 @@ btnReset = Button("重置")
 BUTTON_BAD = r"""# 按钮二参误写样例（v1.4）
 a = Slider(-1, 1, 0.1)
 btnBad = Button("二参", "SetValue(a, 1)")
+"""
+
+NESTED_ITER = r"""# 嵌套迭代用例：Sequence 内单字母变量（v1.4a）
+nN = Slider(3, 60, 1)
+polyN = Polygon(Sequence((cos(2 * pi * k / nN), sin(2 * pi * k / nN)), k, 1, nN))
+"""
+
+RANDOM_CASES = r"""# 引擎支持命令用例：Random（v1.4.2）
+r0 = Random(0, 1)
 """
 
 CHECKS = 0
@@ -330,6 +341,24 @@ def main():
         check("按钮二参误写 → L2 提示 button-script",
               bool(rep) and len(rep.get("errors", [])) == 1
               and rules_of(rep.get("errors", [])) == ["button-script"],
+              json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
+
+        # ---------- 嵌套迭代豁免（v1.4a） ----------
+        nested = os.path.join(tmp, "nested_iter.txt")
+        with open(nested, "w", encoding="utf-8") as f:
+            f.write(NESTED_ITER)
+        rep = run(L1, [nested])
+        check("L1 嵌套迭代豁免：Polygon(Sequence(…, k, …)) 不误报",
+              bool(rep) and rep.get("ok") is True and not rep.get("warnings"),
+              json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
+
+        # ---------- 引擎命令识别（v1.4.2） ----------
+        rnd = os.path.join(tmp, "random_cmd.txt")
+        with open(rnd, "w", encoding="utf-8") as f:
+            f.write(RANDOM_CASES)
+        rep = run(L1, [rnd])
+        check("L1 引擎命令识别：Random 不误报",
+              bool(rep) and rep.get("ok") is True and not rep.get("warnings"),
               json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
 
     print("\n----- 汇总 -----")

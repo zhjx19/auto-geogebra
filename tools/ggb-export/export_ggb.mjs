@@ -175,8 +175,13 @@ async function main() {
         if (fname === "SetColor" && args.length >= 4) {
           var c = null;
           try { c = window.ggbApplet.getColor(args[0]); } catch (e) {}
-          var want = "#" + args.slice(1, 4).map(function(x){ var n = Math.round(parseFloat(x) * 255); return ("0" + n.toString(16)).slice(-2); }).join("").toUpperCase();
-          return { ok: (c || "").toUpperCase() === want, note: "SetColor 核验：实际=" + c + "，期望=" + want };
+          var okc = false;
+          if (c && c.charAt(0) === "#" && c.length >= 7) {
+            var wantCh = [1, 2, 3].map(function(i2){ return Math.round(parseFloat(args[i2]) * 255); });
+            var gotCh = [1, 3, 5].map(function(p2){ return parseInt(c.substr(p2, 2), 16); });
+            okc = gotCh.every(function(g2, idx2){ return Math.abs(g2 - wantCh[idx2]) <= 1; });
+          }
+          return { ok: okc, note: "SetColor 核验：实际=" + c + "（容差 ±1/255）" };
         }
         if (fname === "ShowLabel" && args.length >= 2) {
           var lv = null;

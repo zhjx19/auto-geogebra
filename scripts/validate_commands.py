@@ -182,6 +182,12 @@ def validate_commands(text):
     if cmd_index and isinstance(cmd_index.get("commands"), list):
         cmd_names = [c.get("name") for c in cmd_index["commands"] if isinstance(c, dict)]
 
+    # 引擎支持但手册未单页收录的命令（真机实测，v1.4.2；Random 即 RandomBetween 系列简写）
+    if cmd_names is not None:
+        for _extra in ("Random",):
+            if _extra not in cmd_names:
+                cmd_names = cmd_names + [_extra]
+
     # 第一遍：解析变量定义（含 f(x)=… 函数定义形式；记录“首次”定义行号，供顺序检查用）
     defined_vars = {}
     for i, line in enumerate(lines, 1):
@@ -403,7 +409,9 @@ def validate_commands(text):
         #    迭代型命令行上的单字母循环变量、本行定义均豁免。
         stripped_line = re.sub(r'"(?:[^"\\]|\\.)*"', "", line)
         stripped_line = re.sub(r"\\[a-zA-Z]+", " ", stripped_line)
-        allow_single_letter = cmd_name in ITERATOR_CMDS
+        # 单字母迭代变量豁免：迭代命令出现在顶层或其嵌套调用中均可
+        # （如 polyN = Polygon(Sequence(..., k, ...))）
+        allow_single_letter = cmd_name in ITERATOR_CMDS or any(_it in line for _it in ITERATOR_CMDS)
         for var_name in re.findall(r"[A-Za-z][\w]*", stripped_line):
             if var_name in BUILTIN_WORDS:
                 continue
