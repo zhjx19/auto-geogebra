@@ -44,3 +44,12 @@ node export_ggb.mjs --page page.html --cmds <指令文件> --out <输出.ggb> [-
 ## 附：3D 场景评测（v1.3.1）
 
 已通过初步评测：`Sphere` / `Plane`（三点式）/ `IntersectPath`（平面×球面 → 交线圆）/ 3D 点 / 多元函数 `f(x,y)` 均可经导出器执行并正确写入 .ggb（元素：quadric / plane3d / conic3d / point3d / functionnvar）。3D 视图在无头环境下可正常渲染（截图确认：三维坐标系、球体、交线圆均可见）；也可导入本地 GeoGebra 复核。
+
+## 按钮与脚本（ggb_patch.py，v1.4）
+
+- **创建按钮**：指令中用单参形式 `btnReset = Button("重置")`（真机实测支持命名）。
+- **注入脚本**：`python ggb_patch.py --ggb base.ggb --spec scripts.json --out final.ggb`
+  - spec 格式：`[{"label": "btnReset", "event": "onClick", "script": "SetValue(a, 1)\nSetValue(h, 0.8)"}, …]`
+  - `event` 取 `onClick`（点击）或 `onUpdate`（对象更新时）。
+  - 背景：二参 `Button("标题","脚本")` 经命令注入不受支持（静默失败）；本工具产出与桌面版一致的结构（`<ggbscript val="…">`）。
+- **完整样例**：`example-buttons.txt` ＋ `example-buttons.scripts.json`（割线演示 + 重置/换点按钮，已通过静态验证、真机导出与注入回读核验）。

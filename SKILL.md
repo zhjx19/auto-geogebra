@@ -3,7 +3,7 @@ name: geogebra
 description: Use when 普通高校数学教师需要把教学创意转化为 GeoGebra 动态演示/课件/动画，或需要设计交互变量、滑块、构造步骤、生成 GeoGebra 指令或 .ggb 文件（涉及《高等数学》《线性代数》《概率论与数理统计》及数学专业课程）。
 metadata:
   author: 张敬信 (zhjx19)
-  version: "1.3.1"
+  version: "1.4"
   source: autos.skills.geogebra v0.3.1 (aardio Autos skill)
 license: MIT
 ---
@@ -83,7 +83,7 @@ license: MIT
      > 若 `python` 不在 PATH 中，本机 Python 解释器为 `D:\py_base_env\.venv\Scripts\python.exe`（**仅本机参考**），可替换命令中的 `python`。
    - **备选（人工规则）**：按 [references/command-validation.md](references/command-validation.md) 的检查清单逐项自查。
    - **⚠️ 必须如实告知教师的边界**：L1+L2 都是**静态**验证，只能保证「不会因低级错误卡住」，**不能保证「画出来的一定是你要的」**。下列内容静态手段覆盖不到，**必须实际执行确认**：
-     - GeoGebra 脚本（`SetValue`、`StartAnimation`、`OnClick` 等，属 GGBScript 语法）；自定义工具；`Locus` 轨迹；3D 曲面与交线（`Surface`/`IntersectPath`）；`Zip` 嵌套；依赖顺序敏感的构造。
+     - GeoGebra 脚本（`SetValue`、`StartAnimation`、`OnClick` 等，属 GGBScript 语法）与按钮：**基础支持已开通**（`Button` 创建 + `ggb_patch.py` 脚本注入 + 回读核验，见 `references/interaction-patterns.md`）；复杂脚本、`onUpdate` 动画驱动、自定义工具、`Locus` 轨迹、3D 曲面与交线、`Zip` 嵌套仍建议导入 GeoGebra 实跑确认。
      - 执行途径（任选其一）：本技能自带真机导出工具 `tools/ggb-export`（推荐，含逐条核验与回读校验）／GeoGebra MCP（`eval_command` 执行 + `get_xml` 回读，需先启动服务）／[ggbgen.pages.dev](https://ggbgen.pages.dev/) 在线批量执行／导入本地 GeoGebra 人工确认。
    - 如发现错误，**修正后再重新验证**，直到两道全过。将验证通过的指令和**双验证摘要**（L1 语法 0 错 N 警 + L2 语义 0 错）一并输出。
 
@@ -201,6 +201,7 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
   node "<SKILL_DIR>\tools\ggb-export\export_ggb.mjs" --page "<SKILL_DIR>\tools\ggb-export\page.html" --cmds "<指令文件>" --out "<输出.ggb>" [--png "<预览.png>"]
   ```
 - 工具会做三项核验：对象创建、数值正确、样式生效，并对导出文件回读校验；退出码 0 才视为成功。
+- 带脚本的按钮（重置/重抽/开关）：先用 `Button("标题")` 创建，导出后用 `ggb_patch.py` 注入脚本（真机实测二参形式不受支持）——见 `references/interaction-patterns.md`。
 - 真机执行是静态验证之外的**第三层保险**：引擎会暴露静态验证看不见的问题（小写名坐标=向量、`sec`/`tan` 等保留名被改名、退化初值静默不创建等）。详见 `tools/ggb-export/README.md`。
 
 **方式 B：在线批量执行**（无本机环境时）—— 将指令复制到 [https://ggbgen.pages.dev/](https://ggbgen.pages.dev/) 的 **GGB 脚本** 文本区 → 点击 **批量执行** → 点击页面右上角工具栏中倒数第二个图标（下载按钮），即可保存 .ggb 文件到本地。
@@ -209,7 +210,7 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 
 ## 创作模式库（按需读取）
 
-常见教学创作模式（逼近型、局部线性化、区域与面积、参数曲线/曲面、变换型、随机模拟与统计稳定型）的经验总结，见 [references/patterns.md](references/patterns.md)。生成方案遇到对应模式时优先参考。
+常见教学创作模式（逼近型、局部线性化、区域与面积、参数曲线/曲面、变换型、随机模拟与统计稳定型）的经验总结，见 [references/patterns.md](references/patterns.md)。生成方案遇到对应模式时优先参考。交互增强（按钮 / 动画 / 重置 / 重抽）见 [references/interaction-patterns.md](references/interaction-patterns.md)，按钮脚本用 `ggb_patch.py` 注入。
 
 ## 本机 GeoGebra 环境（可选，仅本机参考）
 
@@ -225,9 +226,11 @@ GeoGebra manual adoc 目录: E:\软件学习\Geogebra资料\manual-main\en\modul
 
 - `scripts/validate_commands.py` — **L1 语法验证器**：括号配对、SetColor 0-1 范围、Text 的 `\n`、Slider 参数、命令拼写、未定义变量，输出 JSON 报告。
 - `scripts/validate_types.py` — **L2 语义（类型）验证器**：用 `data/commands-index.json` 的类型签名检查参数类型、矩阵维度、数值列表；与 L1 组成「双验证」。
-- `scripts/smoke_test.py` — **回归冒烟测试**：好样例 ×3、埋错样例（9 类）、stdin/BOM/GBK 编码边界、命名规则、使用顺序共 18 项检查一键复跑；改动验证器后必须全绿（维护者用）。
+- `scripts/smoke_test.py` — **回归冒烟测试**：好样例 ×3、埋错样例（9 类）、stdin/BOM/GBK 编码边界、命名规则、使用顺序共 20 项检查一键复跑；改动验证器后必须全绿（维护者用）。
 - `scripts/build_index.py` — **指令索引重建工具**：从本机 GeoGebra manual（asciidoc）重建 `data/commands-index.json`，支持 `--compare` 与现有索引做字段级对照（维护者用）。
 - `tools/ggb-export/` — **真机导出工具**：零依赖 Node 脚本，调用官方引擎把指令导出为 .ggb 并逐条核验（用法见其 README）。
+- `tools/ggb-export/ggb_patch.py` — **按钮/脚本注入器**：把 GGBScript 注入导出的 .ggb（按钮脚本无法经命令注入，真机实测）。
+- `references/interaction-patterns.md` — **交互增强模式库**：重置按钮、重抽、开始/停止对（动画 + speed 变量 + onUpdate）、累积按钮、输入框参数。
 - `data/commands-index.json` — 约 500 条 GeoGebra 指令索引（名称、语法、说明、示例），供验证脚本与查询命令使用。
 - `data/zh-command-aliases.json` — 中文教学意图 → 英文 GeoGebra 命令的启发式映射，例如"切线/割线/斜率" → `Tangent, Line, Slope, Derivative, Segment`。
 - `references/course-routing.md` — 20 个高校数学主题路由表（典型变化 + 核心变量 + 常用指令）。
@@ -249,6 +252,14 @@ GeoGebra manual adoc 目录: E:\软件学习\Geogebra资料\manual-main\en\modul
 | 随机/分布/直方图 | `RandomDiscrete`, `Histogram`, `BarChart`, `BinomialDist`, `Poisson` |
 
 ## 更新记录
+
+### v1.4
+- **交互增强（联学作者案例库 219+ 案后落地）**：
+  - 新增 `references/interaction-patterns.md`：重置按钮、重抽/换一批、开始/停止对（动画 + `speed` 变量 + `onUpdate`）、累积按钮、输入框参数等模式（含作者案例引用与真机实测事实）。
+  - 新增 `tools/ggb-export/ggb_patch.py`：为 .ggb 注入按钮/更新脚本（按钮脚本无法经命令注入，真机实测）；配套示例 `example-buttons.txt` ＋ `example-buttons.scripts.json`。
+  - L2 验证器：新增 Button 专项处理（单参通过；二参给出"不受支持，请用 ggb_patch"提示）。
+- **课程路由扩展**：新增 9 个主题（参数曲线与极坐标曲线、二次曲面、三重积分与坐标变换、方向导数与梯度、弧长与曲率、施密特正交化、线性方程组的解、蒙特卡洛方法、相关与线性回归）。
+- **回归套件扩至 20 项**（新增按钮两例）。
 
 ### v1.3.1
 - **L1 追加两组提醒**：退化构造预检（启发式：范围含 0 且未被 SetValue 固定的滑块参与两点构造、代换为 0 后两点重合时提示）、内置常量名提醒（`e`/`pi` 作对象名——真机实测：`e = 5` 会遮蔽内置常量、`pi = 3` 会被解析为方程对象）。
