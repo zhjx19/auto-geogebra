@@ -1,3 +1,5 @@
+<sub>🌐 <b>中文</b> · <a href="README.en.md">English</a></sub>
+
 <div align="center">
 
 # auto-geogebra
@@ -6,6 +8,7 @@
 
 [![Agent Skills](https://img.shields.io/badge/Agent%20Skills-auto--geogebra-blueviolet)](SKILL.md)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![CI](https://github.com/zhjx19/auto-geogebra/actions/workflows/smoke.yml/badge.svg)](https://github.com/zhjx19/auto-geogebra/actions/workflows/smoke.yml)
 [![smoke](https://img.shields.io/badge/smoke-22%20checks%20%2F%200%20FAIL-brightgreen)](scripts/smoke_test.py)
 [![skills.sh](https://skills.sh/b/zhjx19/auto-geogebra)](https://skills.sh/zhjx19/auto-geogebra)
 
@@ -131,6 +134,7 @@ auto-geogebra/
 ├── references/
 │   ├── course-routing.md         # 28 个高校数学主题路由表（典型变化 + 核心变量 + 常用指令）
 │   ├── command-validation.md     # 指令静态验证检查清单
+│   ├── anti-patterns.md          # 常见失败与反例清单（引擎坑 / 验证坑 / 教学反例）
 │   ├── patterns.md               # 6 大教学创作模式库
 │   ├── interaction-patterns.md   # 按钮 / 动画 / 重置等交互增强模式
 │   └── workflow.md               # 教师创作工作流速查
@@ -145,7 +149,8 @@ auto-geogebra/
 ├── tools/ggb-export/             # 真机导出工具（零 npm 依赖）+ 按钮脚本注入器
 ├── examples/                     # 7 个真实示例（指令源 + .ggb + 复现说明）
 ├── assets/                       # 演示 GIF / 截图 + 可复现的合成脚本
-└── .claude-plugin/               # Claude Code 插件市场双通道
+├── .claude-plugin/               # Claude Code 插件市场双通道
+└── .github/workflows/            # CI：冒烟 + 双验证（Windows / Ubuntu 矩阵）
 ```
 
 本目录即技能目录：可直接放入 `~/.config/opencode/skills/`、`~/.claude/skills/`、`~/.codex/skills/` 等安装位使用。
@@ -155,6 +160,8 @@ auto-geogebra/
 ```bash
 python scripts/smoke_test.py     # 期望：22 项全过（含好样例、埋错、编码边界与真机规则回归）
 ```
+
+CI：每次 push 自动在 **Windows / Ubuntu** 上跑冒烟与双验证（见仓库 Actions 页）；遇到报错或静默失败，先查 [references/anti-patterns.md](references/anti-patterns.md)。
 
 验收 prompt：任选 [test-prompts.json](test-prompts.json) 一个场景交给 Agent。合格 = 先出需求确认单、指令带双验证摘要、给出可操作的 .ggb（或如实说明环境限制）。
 
