@@ -1,5 +1,5 @@
 ---
-name: geogebra
+name: auto-geogebra
 description: Use when 普通高校数学教师需要把教学创意转化为 GeoGebra 动态演示/课件/动画，或需要设计交互变量、滑块、构造步骤、生成 GeoGebra 指令或 .ggb 文件（涉及《高等数学》《线性代数》《概率论与数理统计》及数学专业课程）。
 metadata:
   author: 张敬信 (zhjx19)
@@ -79,7 +79,7 @@ license: MIT
    | L1 语法 | 括号配对、SetColor 0-1 范围、Text 的 `\n`、Slider 参数、命令拼写、未定义变量、命名规则、使用顺序与退化预检（v1.3+） | `ok == true` |
    | L2 语义 | 参数类型不匹配、矩阵维度错配、对几何对象列表求和 | `semanticErrors == 0` |
 
-   - `<SKILL_DIR>` 为本技能所在目录（WorkBuddy：`C:\Users\zhang\.workbuddy\skills\geogebra`；opencode：`C:\Users\zhang\.config\opencode\skills\geogebra`；OpenClaw/AutoClaw：`C:\Users\zhang\.openclaw-autoclaw\skills\geogebra`）。脚本按自身位置自动定位 `data/commands-index.json`，无需额外传参；并自动处理 UTF-8 BOM 与 GBK/GB18030 编码的指令文件与管道输入。
+   - `<SKILL_DIR>` 为本技能所在目录（WorkBuddy：`C:\Users\zhang\.workbuddy\skills\auto-geogebra`；opencode：`C:\Users\zhang\.config\opencode\skills\auto-geogebra`；OpenClaw/AutoClaw：`C:\Users\zhang\.openclaw-autoclaw\skills\auto-geogebra`）。脚本按自身位置自动定位 `data/commands-index.json`，无需额外传参；并自动处理 UTF-8 BOM 与 GBK/GB18030 编码的指令文件与管道输入。
      > 若 `python` 不在 PATH 中，本机 Python 解释器为 `D:\py_base_env\.venv\Scripts\python.exe`（**仅本机参考**），可替换命令中的 `python`。
    - **备选（人工规则）**：按 [references/command-validation.md](references/command-validation.md) 的检查清单逐项自查。
    - **⚠️ 必须如实告知教师的边界**：L1+L2 都是**静态**验证，只能保证「不会因低级错误卡住」，**不能保证「画出来的一定是你要的」**。下列内容静态手段覆盖不到，**必须实际执行确认**：

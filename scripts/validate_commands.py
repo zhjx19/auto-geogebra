@@ -21,9 +21,9 @@ INDEX_CANDIDATES = [
     os.path.join(SCRIPT_DIR, "..", "data", "commands-index.json"),
     os.path.join(SCRIPT_DIR, "..", "geogebra", "data", "commands-index.json"),
     os.path.join(SCRIPT_DIR, "..", "..", "geogebra", "data", "commands-index.json"),
-    os.path.expanduser("~/.workbuddy/skills/geogebra/data/commands-index.json"),
-    os.path.expanduser("~/.config/opencode/skills/geogebra/data/commands-index.json"),
-    os.path.expanduser("~/.openclaw-autoclaw/skills/geogebra/data/commands-index.json"),
+    os.path.expanduser("~/.workbuddy/skills/auto-geogebra/data/commands-index.json"),
+    os.path.expanduser("~/.config/opencode/skills/auto-geogebra/data/commands-index.json"),
+    os.path.expanduser("~/.openclaw-autoclaw/skills/auto-geogebra/data/commands-index.json"),
 ]
 
 

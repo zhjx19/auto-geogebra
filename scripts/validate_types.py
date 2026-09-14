@@ -31,9 +31,9 @@ INDEX_CANDIDATES = [
     os.path.join(HERE, "..", "data", "commands-index.json"),                      # geogebra/scripts/
     os.path.join(HERE, "..", "geogebra", "data", "commands-index.json"),          # <workspace>/tools/
     os.path.join(HERE, "..", "..", "geogebra", "data", "commands-index.json"),    # <workspace>/x/scripts/
-    os.path.expanduser("~/.workbuddy/skills/geogebra/data/commands-index.json"),
-    os.path.expanduser("~/.config/opencode/skills/geogebra/data/commands-index.json"),
-    os.path.expanduser("~/.openclaw-autoclaw/skills/geogebra/data/commands-index.json"),
+    os.path.expanduser("~/.workbuddy/skills/auto-geogebra/data/commands-index.json"),
+    os.path.expanduser("~/.config/opencode/skills/auto-geogebra/data/commands-index.json"),
+    os.path.expanduser("~/.openclaw-autoclaw/skills/auto-geogebra/data/commands-index.json"),
 ]
 
 
