@@ -3,7 +3,7 @@ name: auto-geogebra
 description: Use when 需要把高校数学教学创意转化为可运行的 GeoGebra 动态演示/课件/动画：设计交互变量与滑块、生成并验证 GeoGebra 指令、导出 .ggb 文件（覆盖《高等数学》《线性代数》《概率论与数理统计》与数学专业课程）。触发词：GeoGebra 演示、ggb 课件、动态演示制作、滑块与参数设计、指令校验、导数/积分/线性变换/概率模拟类演示等。不要用于非数学教学用途，也不替代教师自己的教学设计。
 metadata:
   author: 张敬信 (zhjx19)
-  version: "1.4.1"
+  version: "1.4.2"
   source: autos.skills.geogebra v0.3.1 (aardio Autos skill)
 license: Apache-2.0
 ---
@@ -176,6 +176,18 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 
 常见 LaTeX 多行环境：`\begin{aligned}`（对齐多行）、`\begin{array}{l}`（左对齐表格）、`\begin{matrix}`（无括号矩阵）。
 
+## 常见失败与反例（速查）
+
+生成或调试中遇到报错、图形没出来、按钮没反应，先对照 [references/anti-patterns.md](references/anti-patterns.md)。高频速查：
+
+- 小写名 + 坐标 = **向量**（点用大写名或 `Point(...)`）；
+- 与内置函数同名（`sec`/`tan`…）的对象会被**自动改名**；
+- 滑块范围含 0 且初值为 0 → 两点重合，`Line` **静默不创建**（先 `SetValue` 设非零初值）；
+- 脚本命令（`SetValue` 等）**返回值不可信**，效果真实生效（用 getter 核验）；
+- 二参 `Button("标题","脚本")` 不受支持（`Button("标题")` + `ggb_patch.py` 注入）；
+- 滑块必须写 `Slider(min, max, step)`；`Text()` 换行用 LaTeX `\\`；多语句脚本用**换行**分隔；
+- `e` / `pi` 等内置常量名不能作对象名（用 `eVal` / `piVal`）。
+
 ## 输出给教师的推荐格式
 
 为教师生成设计方案时，**必须包含**以下 8 项（与第三层完成标准一致）：
@@ -232,6 +244,7 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 - `data/zh-command-aliases.json` — 中文教学意图 → 英文 GeoGebra 命令的启发式映射，例如"切线/割线/斜率" → `Tangent, Line, Slope, Derivative, Segment`。
 - `references/course-routing.md` — 28 个高校数学主题路由表（典型变化 + 核心变量 + 常用指令）。
 - `references/command-validation.md` — 指令静态验证检查清单（括号配对、SetColor 颜色、Slider 参数、Text 换行、未知命令、未定义变量等）。
+- `references/anti-patterns.md` — **常见失败与反例清单**：引擎语法坑（真机实测）、验证行为坑、教学设计反例、速查表。
 - `references/patterns.md` — 6 大教学创作模式库（逼近、局部线性化、面积/体积、参数曲线曲面、线性变换、随机模拟）。
 - `references/workflow.md` — 教师创作工作流速查。
 
@@ -249,6 +262,11 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 | 随机/分布/直方图 | `RandomDiscrete`, `Histogram`, `BarChart`, `BinomialDist`, `Poisson` |
 
 ## 更新记录
+
+### v1.4.2（2026-09-14 · 发布后加固）
+- 新增 [references/anti-patterns.md](references/anti-patterns.md)：常见失败与反例集中清单（引擎坑 / 验证行为坑 / 教学设计反例）+ SKILL.md 速查节。
+- 新增 GitHub Actions CI：每次 push 自动跑冒烟（22 项）与 L1/L2 双验证（Windows / Ubuntu 矩阵）。
+- README 英文版（README.en.md）与 CI 徽章；assets/README.md 补充演示复现说明。
 
 ### v1.4.1（2026-09-14 · 发布就绪）
 - **更名为 `auto-geogebra`**（原名 geogebra，避免与 GeoGebra 软件本体重名；Claude Code / Codex 软链接已同步）。
