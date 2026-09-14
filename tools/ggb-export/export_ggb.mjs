@@ -9,6 +9,7 @@
  * 用法：
  *   node export_ggb.mjs --page <page.html> --cmds <commands.txt> --out <out.ggb>
  *                       [--png <preview.png>] [--browser <可执行文件>] [--timeout 毫秒] [--headful] [--trace]
+ *   注：--png 预览在检测到三维对象时自动切换到 3D 视图。
  *
  * 依赖：Node 18+（全局 fetch/WebSocket；本机 Node 22 已带）+ 本机 Chrome 或 Edge。
  * 退出码：0=成功；1=失败；2=有指令未通过（见 failedList）；3=有软失败（见 softList）。
@@ -248,6 +249,21 @@ async function main() {
     })()`, { awaitPromise: true });
     if (!b64 || typeof b64 !== "string") throw new Error("getBase64() 未返回数据（已尝试回调/同步/Promise 三种形态）");
 
+    // 3.4) 3D 自适应：检测到三维对象时，切到 3D 视图再截图（v1.3.1）
+    let has3d = false;
+    try {
+      has3d = await evalJS(`(function(){
+        try {
+          var x = window.ggbApplet.getXML();
+          return /type="(point3d|line3d|segment3d|vector3d|polygon3d|plane3d|conic3d|quadric|surface|polyhedron|net3d)"/.test(x);
+        } catch (e) { return false; }
+      })()`);
+      if (has3d && args.png) {
+        await evalJS('(function(){ try { window.ggbApplet.setPerspective("T3"); } catch (e) {} return true; })()');
+        await sleep(1400);
+      }
+    } catch (e) {}
+
     // 3.5) 可选：导出预览 PNG（CDP 截取画布区域）
     let pngWritten = null;
     if (args.png) {
@@ -305,6 +321,7 @@ async function main() {
       softFailures: soft.length,
       softList: soft,
       unverifiedScripts: unverified.length,
+      preview3d: has3d,
       verifiedNotes: verifiedNotes.map((r) => ({ cmd: r.cmd, note: r.note })),
       objectsBefore: namesBefore ? namesBefore.length : null,
       objectsAfter: namesAfter ? namesAfter.length : null,
