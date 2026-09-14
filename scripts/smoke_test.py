@@ -10,6 +10,8 @@
   4. 文件编码边界  —— UTF-8+BOM / GBK(ANSI) 文件，期望不崩溃、正常验证
   5. 命名规则      —— 小写坐标名 / 保留名提示（v1.3）
   6. 使用顺序      —— 先使用后定义提示（v1.3）
+  7. 退化构造预检  —— 零值滑块参与两点构造时的提示与抑制（v1.3.1）
+  8. 内置常量名    —— e / pi 作对象名的提醒（v1.3.1）
 
 用法：
     python scripts/smoke_test.py        # 跑全部用例，输出 PASS/FAIL 与汇总
@@ -60,10 +62,11 @@ ShowLabel(detVal, false)
 ShowLabel(vec1, false)
 """
 
-GOOD_MORE = r"""# 导数定义演示——冒烟样例（命名已按真机规则修正）
+GOOD_MORE = r"""# 导数定义演示——冒烟样例（命名已按真机规则修正；含非零初值）
 f(x) = x^3 - 3x + 1
 a = Slider(-2, 2, 0.1)
 h = Slider(-1, 1, 0.01)
+SetValue(h, 0.5)
 A = (a, f(a))
 B = (a + h, f(a + h))
 secant = Line(A, B)
@@ -102,6 +105,30 @@ sec = Line((0, 0), (1, 1))
 ORDER_CASES = r"""# 使用顺序用例：先使用、后定义（v1.3）
 y1 = x1 + 1
 x1 = 2
+"""
+
+DEGENERATE_CASES = r"""# 退化预检用例：零值范围滑块参与两点构造，未设非零初值（v1.3.1）
+f(x) = x^2
+a = Slider(-1, 1, 0.1)
+h = Slider(-1, 1, 0.1)
+A = (a, f(a))
+B = (a + h, f(a + h))
+secant = Line(A, B)
+"""
+
+DEGENERATE_FIXED_CASES = r"""# 退化预检用例：已 SetValue，非零初值（v1.3.1）
+f(x) = x^2
+a = Slider(-1, 1, 0.1)
+h = Slider(-1, 1, 0.1)
+SetValue(h, 0.5)
+A = (a, f(a))
+B = (a + h, f(a + h))
+secant = Line(A, B)
+"""
+
+CONSTANT_CASES = r"""# 内置常量名用例：e / pi 作对象名（v1.3.1）
+e = 5
+pi = 3
 """
 
 CHECKS = 0
@@ -241,6 +268,36 @@ def main():
               bool(rep) and rep.get("ok") is True
               and len(rep.get("warnings", [])) == 1
               and rules_of(rep.get("warnings", [])) == ["use-before-define"],
+              json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
+
+        # ---------- 退化构造预检（v1.3.1） ----------
+        deg = os.path.join(tmp, "degenerate_hint.txt")
+        with open(deg, "w", encoding="utf-8") as f:
+            f.write(DEGENERATE_CASES)
+        rep = run(L1, [deg])
+        check("L1 退化预检：零值滑块参与两点构造 → 提示 degenerate-hint",
+              bool(rep) and rep.get("ok") is True
+              and len(rep.get("warnings", [])) == 1
+              and rules_of(rep.get("warnings", [])) == ["degenerate-hint"],
+              json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
+
+        deg2 = os.path.join(tmp, "degenerate_fixed.txt")
+        with open(deg2, "w", encoding="utf-8") as f:
+            f.write(DEGENERATE_FIXED_CASES)
+        rep = run(L1, [deg2])
+        check("L1 退化预检：已 SetValue 非零初值 → 不提示",
+              bool(rep) and rep.get("ok") is True and not rep.get("warnings"),
+              json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
+
+        # ---------- 内置常量名（v1.3.1） ----------
+        cons = os.path.join(tmp, "constant_names.txt")
+        with open(cons, "w", encoding="utf-8") as f:
+            f.write(CONSTANT_CASES)
+        rep = run(L1, [cons])
+        check("L1 常量名提醒：e/pi 作对象名 → 2 条 reserved-constant",
+              bool(rep) and rep.get("ok") is True
+              and len(rep.get("warnings", [])) == 2
+              and set(rules_of(rep.get("warnings", []))) == {"reserved-constant"},
               json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
 
     print("\n----- 汇总 -----")

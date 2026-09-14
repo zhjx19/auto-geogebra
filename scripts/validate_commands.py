@@ -163,7 +163,7 @@ def validate_commands(text):
     """静态验证 GeoGebra 指令脚本。
 
     检查：括号配对、SetColor 颜色范围、Text() 换行、Slider 参数、
-    未知命令、未定义变量引用、命名规则（保留名 / 小写坐标名）与使用顺序提醒。返回 dict。
+    未知命令、未定义变量引用、命名规则（保留名 / 小写坐标名 / 内置常量名）、使用顺序与退化构造预检。返回 dict。
     """
     result = {
         "ok": True,
@@ -192,6 +192,31 @@ def validate_commands(text):
         m_fn = re.match(r"^([\w_]+)\s*\([^)]*\)\s*[:=]", line)
         if m_fn:
             defined_vars.setdefault(m_fn.group(1), i)
+
+    # 退化预检用：范围含 0 的滑块、SetValue 固定为非零的滑块、点坐标定义表达式
+    zero_sliders = set()
+    fixed_sliders = set()
+    coord_defs = {}
+    for line in lines:
+        m_sl = re.match(r"^([\w_]+)\s*=\s*Slider\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*,", line)
+        if m_sl:
+            try:
+                if float(m_sl.group(2)) <= 0 <= float(m_sl.group(3)):
+                    zero_sliders.add(m_sl.group(1))
+            except ValueError:
+                pass
+            continue
+        m_sv = re.match(r"^SetValue\(\s*([\w_]+)\s*,\s*([-\d.]+)\s*\)\s*$", line)
+        if m_sv:
+            try:
+                if abs(float(m_sv.group(2))) > 1e-12:
+                    fixed_sliders.add(m_sv.group(1))
+            except ValueError:
+                pass
+            continue
+        m_cd = re.match(r"^([A-Za-z_]\w*)\s*=\s*(\(.*\))\s*$", line)
+        if m_cd:
+            coord_defs[m_cd.group(1)] = m_cd.group(2).strip()
 
     # 第二遍：逐行检查
     for i, line in enumerate(lines, 1):
@@ -235,6 +260,48 @@ def validate_commands(text):
                 "message": f"'{m_lc.group(1)}' 以小写开头且定义了坐标对：该引擎会将其创建为「向量」而非「点」（真机实测）。如需要点请改用大写开头名或 Point(...)；若本意就是向量可忽略。",
                 "text": line,
             })
+
+        _const_notes = {
+            "e": "真机实测：引擎会直接创建同名数值对象、遮蔽内置常量",
+            "pi": "真机实测：引擎会把该行解析为方程对象（而非数值对象）",
+            "π": "真机实测：同 pi，会被解析为方程对象",
+        }
+        if m_def and m_def.group(1) in _const_notes:
+            _cn = m_def.group(1)
+            result["warnings"].append({
+                "line": i, "severity": "warning", "rule": "reserved-constant",
+                "message": f"对象名 '{_cn}' 与内置常量同名：{_const_notes[_cn]}，易造成引用歧义或并非预期对象。建议改名。",
+                "text": line,
+            })
+
+        # 2.6 退化构造预检（启发式，v1.3.1）：单侧零值滑块代换重合检查
+        m_two = re.match(r"^(?:[\w_]+\s*=\s*)?(Line|Segment|Ray|Vector)\s*[\(\[]\s*([\w_]+)\s*,\s*([\w_]+)\s*[\)\]]", line)
+        if m_two:
+            _p1, _p2 = m_two.group(2), m_two.group(3)
+            if _p1 in coord_defs and _p2 in coord_defs:
+                _e1, _e2 = coord_defs[_p1], coord_defs[_p2]
+                _hint = None
+                for _s in sorted(zero_sliders):
+                    if _s in fixed_sliders:
+                        continue
+                    _in1 = re.search(r"\b" + re.escape(_s) + r"\b", _e1) is not None
+                    _in2 = re.search(r"\b" + re.escape(_s) + r"\b", _e2) is not None
+                    if _in1 == _in2:
+                        continue
+                    _single = _e1 if _in1 else _e2
+                    _other = _e2 if _in1 else _e1
+                    _sub = re.sub(r"\b" + re.escape(_s) + r"\b", "0", _single)
+                    _sub = re.sub(r"\s*\+\s*0(?![\d.])", "", _sub)
+                    _sub = re.sub(r"\s+", " ", _sub).strip()
+                    if _sub == re.sub(r"\s+", " ", _other).strip():
+                        _hint = _s
+                        break
+                if _hint:
+                    result["warnings"].append({
+                        "line": i, "severity": "warning", "rule": "degenerate-hint",
+                        "message": f"退化预检：滑块 '{_hint}' 范围含 0（初始值为 0），将其代换为 0 后两点 {_p1}、{_p2} 重合，初始状态下 '{m_two.group(1)}' 可能因重合而静默不创建（真机实测）。建议先 SetValue({_hint}, 非零初值) 再构造。",
+                        "text": line,
+                    })
 
         # 3. SetColor 颜色范围检查 (0-1)
         if cmd_name == "SetColor":
