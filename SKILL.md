@@ -3,7 +3,7 @@ name: geogebra
 description: Use when 普通高校数学教师需要把教学创意转化为 GeoGebra 动态演示/课件/动画，或需要设计交互变量、滑块、构造步骤、生成 GeoGebra 指令或 .ggb 文件（涉及《高等数学》《线性代数》《概率论与数理统计》及数学专业课程）。
 metadata:
   author: 张敬信 (zhjx19)
-  version: "1.3"
+  version: "1.3.1"
   source: autos.skills.geogebra v0.3.1 (aardio Autos skill)
 license: MIT
 ---
@@ -76,7 +76,7 @@ license: MIT
 
    | 层 | 检查内容 | 通过标准 |
    |---|---|---|
-   | L1 语法 | 括号配对、SetColor 0-1 范围、Text 的 `\n`、Slider 参数、命令拼写、未定义变量、命名规则与使用顺序（v1.3 新增） | `ok == true` |
+   | L1 语法 | 括号配对、SetColor 0-1 范围、Text 的 `\n`、Slider 参数、命令拼写、未定义变量、命名规则、使用顺序与退化预检（v1.3+） | `ok == true` |
    | L2 语义 | 参数类型不匹配、矩阵维度错配、对几何对象列表求和 | `semanticErrors == 0` |
 
    - `<SKILL_DIR>` 为本技能所在目录（WorkBuddy：`C:\Users\zhang\.workbuddy\skills\geogebra`；opencode：`C:\Users\zhang\.config\opencode\skills\geogebra`；OpenClaw/AutoClaw：`C:\Users\zhang\.openclaw-autoclaw\skills\geogebra`）。脚本按自身位置自动定位 `data/commands-index.json`，无需额外传参；并自动处理 UTF-8 BOM 与 GBK/GB18030 编码的指令文件与管道输入。
@@ -225,7 +225,7 @@ GeoGebra manual adoc 目录: E:\软件学习\Geogebra资料\manual-main\en\modul
 
 - `scripts/validate_commands.py` — **L1 语法验证器**：括号配对、SetColor 0-1 范围、Text 的 `\n`、Slider 参数、命令拼写、未定义变量，输出 JSON 报告。
 - `scripts/validate_types.py` — **L2 语义（类型）验证器**：用 `data/commands-index.json` 的类型签名检查参数类型、矩阵维度、数值列表；与 L1 组成「双验证」。
-- `scripts/smoke_test.py` — **回归冒烟测试**：好样例 ×3、埋错样例（9 类）、stdin/BOM/GBK 编码边界、命名规则、使用顺序共 15 项检查一键复跑；改动验证器后必须全绿（维护者用）。
+- `scripts/smoke_test.py` — **回归冒烟测试**：好样例 ×3、埋错样例（9 类）、stdin/BOM/GBK 编码边界、命名规则、使用顺序共 18 项检查一键复跑；改动验证器后必须全绿（维护者用）。
 - `scripts/build_index.py` — **指令索引重建工具**：从本机 GeoGebra manual（asciidoc）重建 `data/commands-index.json`，支持 `--compare` 与现有索引做字段级对照（维护者用）。
 - `tools/ggb-export/` — **真机导出工具**：零依赖 Node 脚本，调用官方引擎把指令导出为 .ggb 并逐条核验（用法见其 README）。
 - `data/commands-index.json` — 约 500 条 GeoGebra 指令索引（名称、语法、说明、示例），供验证脚本与查询命令使用。
@@ -249,6 +249,11 @@ GeoGebra manual adoc 目录: E:\软件学习\Geogebra资料\manual-main\en\modul
 | 随机/分布/直方图 | `RandomDiscrete`, `Histogram`, `BarChart`, `BinomialDist`, `Poisson` |
 
 ## 更新记录
+
+### v1.3.1
+- **L1 追加两组提醒**：退化构造预检（启发式：范围含 0 且未被 SetValue 固定的滑块参与两点构造、代换为 0 后两点重合时提示）、内置常量名提醒（`e`/`pi` 作对象名——真机实测：`e = 5` 会遮蔽内置常量、`pi = 3` 会被解析为方程对象）。
+- **回归套件扩充至 18 项**（新增退化预检 ×2、常量名 ×1 用例）；**test-prompts.json 扩充至 5 例**（补充线性代数、中心极限定理案例）。
+- 导出器 3D 场景初步评测通过：`Sphere` / `Plane` / `IntersectPath` / 3D 点 / 多元函数均可执行并正确导出到 .ggb（quadric / plane3d / conic3d / point3d 元素），详见 `tools/ggb-export/readme.md`。
 
 ### v1.3
 - **新增真机导出工具** `tools/ggb-export/`：本地无头浏览器 + 官方 GeoGebra 引擎，逐条执行 → 核验（对象 / 数值 / 样式）→ 导出 .ggb + 预览图 → 回读校验。零 npm 依赖（Node 18+ / Chrome 或 Edge）。

@@ -39,4 +39,8 @@ node export_ggb.mjs --page page.html --cmds <指令文件> --out <输出.ggb> [-
 3. **退化初值静默不创建**：`h = Slider(-1, 1, 0.01)` 初始值为 0 时 `A`、`B` 重合，`Line(A, B)` 返回“成功”却**不创建任何对象**；先 `SetValue(h, 0.5)` 设非零初值。
 4. **脚本命令返回值不可信**：`SetValue` / `SetColor` / `ShowLabel` 的 `evalCommand` 恒返回 false，但效果真实生效；导出器内置 getter 核验（`getValue` / `getColor` / `getLabelVisible`）。
 
-其中规则 1、2 已沉淀为 L1 验证器的静态提醒（v1.3）；规则 3、4 由本工具在真机执行时自动检出/核验。
+其中规则 1、2 已沉淀为 L1 验证器的静态提醒（v1.3）；规则 3、4 由本工具在真机执行时自动检出/核验（v1.3.1 起，规则 3 另有启发式静态预检）。
+
+## 附：3D 场景评测（v1.3.1）
+
+已通过初步评测：`Sphere` / `Plane`（三点式）/ `IntersectPath`（平面×球面 → 交线圆）/ 3D 点 / 多元函数 `f(x,y)` 均可经导出器执行并正确写入 .ggb（元素：quadric / plane3d / conic3d / point3d / functionnvar）。3D 视图在无头环境下可正常渲染（截图确认：三维坐标系、球体、交线圆均可见）；也可导入本地 GeoGebra 复核。
