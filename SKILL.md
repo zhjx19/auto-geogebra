@@ -3,7 +3,7 @@ name: auto-geogebra
 description: Use when 需要把高校数学教学创意转化为可运行的 GeoGebra 动态演示/课件/动画：设计交互变量与滑块、生成并验证 GeoGebra 指令、导出 .ggb 文件（覆盖《高等数学》《线性代数》《概率论与数理统计》与数学专业课程）。触发词：GeoGebra 演示、ggb 课件、动态演示制作、滑块与参数设计、指令校验、导数/积分/线性变换/概率模拟类演示等。不要用于非数学教学用途，也不替代教师自己的教学设计。
 metadata:
   author: 张敬信 (zhjx19)
-  version: "1.4.2"
+  version: "1.4.3"
   source: autos.skills.geogebra v0.3.1 (aardio Autos skill)
 license: Apache-2.0
 ---
@@ -115,6 +115,12 @@ license: Apache-2.0
 11. 教师拿到 .ggb 后可能需要微调函数、区间、颜色、标签。设计方案应保留可编辑空间，指令要干净、有注释、不堆砌无关对象。
 12. 构造步骤不要用过于复杂或冷门的 GeoGebra 指令组合——能用基础指令（`Point`、`Segment`、`Tangent`、`Polygon`、`Sequence` 等）优先用基础指令。
 
+### 版面预算（免截图巡检 · 提速）
+
+13. **不要反复截图检查文字遮挡、位置是否合适**，也不要为此调整坐标、重新导出——最终用户打开后可自行拖动对象、缩放或调整窗口大小。版面只守一条预算：
+    - **页面信息不超标**：核心控件 ≤5 个、动态文本 ≤5 条、图形区一眼可读；能不显示的不显示（`ShowLabel(obj, false)` 隐藏标签，辅助对象不创建或隐藏）。
+    - **只有功能性问题**（图形没出来、对象缺失、数值不对、按钮无反应）才修改并重新导出；遮挡、位置不理想一律不改、不重导、不再截图确认。
+
 ## GeoGebra 指令编写规范
 
 ### Slider 指令
@@ -213,6 +219,7 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
   node "<SKILL_DIR>\tools\ggb-export\export_ggb.mjs" --page "<SKILL_DIR>\tools\ggb-export\page.html" --cmds "<指令文件>" --out "<输出.ggb>" [--png "<预览.png>"]
   ```
 - 工具会做三项核验：对象创建、数值正确、样式生效，并对导出文件回读校验；退出码 0 才视为成功。
+- `--png` 预览图**按需才加**（用户明确要预览图、或制作发布示例时）；默认不生成，导出成功即交付，不做截图巡检与版面微调重导（见「版面预算」）。
 - 带脚本的按钮（重置/重抽/开关）：先用 `Button("标题")` 创建，导出后用 `ggb_patch.py` 注入脚本（真机实测二参形式不受支持）——见 `references/interaction-patterns.md`。
 - 真机执行是静态验证之外的**第三层保险**：引擎会暴露静态验证看不见的问题（小写名坐标=向量、`sec`/`tan` 等保留名被改名、退化初值静默不创建等）。详见 `tools/ggb-export/README.md`。
 
@@ -262,6 +269,11 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 | 随机/分布/直方图 | `RandomDiscrete`, `Histogram`, `BarChart`, `BinomialDist`, `Poisson` |
 
 ## 更新记录
+
+### v1.4.3（2026-09-25 · 提速减步）
+- 新增「**版面预算（免截图巡检）**」规则：不再反复截图检查文字遮挡/位置，不为版面微调重新导出（教师可自行拖动对象、缩放窗口）；版面只守数量预算（核心控件 ≤5、动态文本 ≤5、能不显示的不显示），功能性问题（图形没出来、对象缺失、数值不对、按钮无反应）才改了重导。
+- `--png` 预览图改为**按需**生成（用户明确要预览图或制作发布示例时才加），默认导出成功即交付。
+- `references/workflow.md` 第 7-8 步收口：只迭代数学内容；`references/anti-patterns.md` 新增「截图巡检多轮重导」反例。
 
 ### v1.4.2（2026-09-14 · 发布后加固）
 - 新增 [references/anti-patterns.md](references/anti-patterns.md)：常见失败与反例集中清单（引擎坑 / 验证行为坑 / 教学设计反例）+ SKILL.md 速查节。
