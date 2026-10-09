@@ -9,7 +9,7 @@
 [![Agent Skills](https://img.shields.io/badge/Agent%20Skills-auto--geogebra-blueviolet)](SKILL.md)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![CI](https://github.com/zhjx19/auto-geogebra/actions/workflows/smoke.yml/badge.svg)](https://github.com/zhjx19/auto-geogebra/actions/workflows/smoke.yml)
-[![smoke](https://img.shields.io/badge/smoke-25%20checks%20%2F%200%20FAIL-brightgreen)](scripts/smoke_test.py)
+[![smoke](https://img.shields.io/badge/smoke-28%20checks%20%2F%200%20FAIL-brightgreen)](scripts/smoke_test.py)
 [![skills.sh](https://skills.sh/b/zhjx19/auto-geogebra)](https://skills.sh/zhjx19/auto-geogebra)
 
 **把高校数学教学创意变成可运行、可编辑、可验证的 GeoGebra 动态演示：需求澄清 → 变量设计 → 指令生成 → 双验证 → 真机导出 .ggb。**
@@ -22,7 +22,7 @@
 
 <img src="assets/demo.gif" alt="演示：7 个真实 GeoGebra 示例" width="100%">
 
-<sub>示例（GIF 展示 7 个）：导数定义 · 线性变换 · 球面截交 · 按钮割线 · 正 n 边形逼近圆 · 泰勒近似 · 抛硬币频率。全部由 `tools/ggb-export` 真机导出，.ggb 原件在 [examples/](examples/) 可直接打开（现共 13 个，含中值定理 / 梯度 / 置信区间 / 方向场等）。</sub>
+<sub>示例（GIF 展示 7 个）：导数定义 · 线性变换 · 球面截交 · 按钮割线 · 正 n 边形逼近圆 · 泰勒近似 · 抛硬币频率。全部由 `tools/ggb-export` 真机导出，.ggb 原件在 [examples/](examples/) 可直接打开。</sub>
 
 ---
 
@@ -62,7 +62,7 @@ GeoGebra 有 500+ 条指令，还有一批**只有真机才暴露的陷阱**：�
 
 （其余示例见下表——每个 `.ggb` 都可点开直接运行。）
 
-### 案例索引（13 个真实示例，点名字直接打开 .ggb）
+### 案例索引（7 个真实示例，点名字直接打开 .ggb）
 
 | # | 示例 | 类型 | 亮点 | 打开 |
 |---|---|---|---|---|
@@ -73,14 +73,8 @@ GeoGebra 有 500+ 条指令，还有一批**只有真机才暴露的陷阱**：�
 | 5 | 正 n 边形逼近圆 | 逼近 | 播放/停止/重置按钮对 | [demo5](examples/demo5-polygon-circle.ggb) |
 | 6 | 泰勒近似 | 逼近 | 多项式逐阶逼近 | [demo6](examples/demo6-taylor.ggb) |
 | 7 | 抛硬币频率 | 随机模拟 | 频率稳定到 0.5（重抽） | [demo7](examples/demo7-coin-toss.ggb) |
-| 8 | 拉格朗日中值定理 | 几何定理 | 平行弦与切线；`Root` 求中值点 | [demo8](examples/demo8-lagrange-mvt.ggb) |
-| 9 | 方向导数与梯度 | 3D | 梯度方向 = 方向导数最大 | [demo9](examples/demo9-gradient-direction.ggb) |
-| 10 | 行列式与面积 | 变换 | 行列式 = 面积缩放因子 | [demo10](examples/demo10-determinant-area.ggb) |
-| 11 | 特征向量 | 变换 | 方向不变的向量（手算特征分解） | [demo11](examples/demo11-eigenvector.ggb) |
-| 12 | 置信区间覆盖率 | 统计模拟 | 95% 区间覆盖率模拟（重抽样） | [demo12](examples/demo12-confidence-interval.ggb) |
-| 13 | 方向场与积分曲线 | 微分方程 | `SlopeField` + 拖动初值 | [demo13](examples/demo13-slopefield.ggb) |
 
-<sub>示例 8–13 为 v1.5.0「实跑打磨」产物：覆盖几何定理 / 3D 函数 / 线性变换 / 统计模拟 / 微分方程五类创作模式，全部真机导出并回读校验。</sub>
+<sub>示例 1–7 为技能自带示例。其余主题（中值定理 / 梯度 / 置信区间 / 变上限积分 / 正交投影 / 贝叶斯 / p 值 / Logistic / Fourier 等）的指令写法与真机坑已沉淀在 [references/](references/)，可按需生成。</sub>
 
 ## 快速开始
 
@@ -150,7 +144,7 @@ npx skills add zhjx19/auto-geogebra
 ```text
 auto-geogebra/
 ├── SKILL.md                      # 主工作流：需求澄清 → 变量设计 → 实现 → 双验证 → 导出
-├── test-prompts.json             # 7 个真实测试场景（含预期行为）
+├── test-prompts.json             # 9 个真实测试场景（含预期行为）
 ├── references/
 │   ├── course-routing.md         # 29 个高校数学主题路由表（典型变化 + 核心变量 + 常用指令）
 │   ├── command-validation.md     # 指令静态验证检查清单
@@ -167,7 +161,7 @@ auto-geogebra/
 │   ├── commands-index.json       # 500+ 条 GeoGebra 指令索引
 │   └── zh-command-aliases.json   # 中文教学意图 → 英文命令映射
 ├── tools/ggb-export/             # 真机导出工具（零 npm 依赖）+ 按钮脚本注入器
-├── examples/                     # 13 个真实示例（指令源 + .ggb + 复现说明）
+├── examples/                     # 7 个真实示例（指令源 + .ggb + 复现说明）
 ├── assets/                       # 演示 GIF / 截图 + 可复现的合成脚本
 ├── .claude-plugin/               # Claude Code 插件市场双通道
 └── .github/workflows/            # CI：冒烟 + 双验证（Windows / Ubuntu 矩阵）
@@ -178,7 +172,7 @@ auto-geogebra/
 ## 验证与测试
 
 ```bash
-python scripts/smoke_test.py     # 期望：25 项全过（含好样例、埋错、编码边界与真机规则回归）
+python scripts/smoke_test.py     # 期望：28 项全过（含好样例、埋错、编码边界与真机规则回归）
 ```
 
 CI：每次 push 自动在 **Windows / Ubuntu** 上跑冒烟与双验证（见仓库 Actions 页）；遇到报错或静默失败，先查 [references/anti-patterns.md](references/anti-patterns.md)。

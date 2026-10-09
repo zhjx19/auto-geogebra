@@ -169,7 +169,7 @@
 
 常用命令：`SlopeField`, `SolveODE`, `Curve`, `Point`, `Segment`。
 
-要点（真机实测，T6）：`SlopeField(y - y^2, 15)` 生成方向场（导出为 `locus` 元素）；`SolveODE(f, P0)` 以可拖动点 `P0` 为初值返回解曲线（`function` 元素）；两者在经典引擎下均可导出。
+要点（真机实测，T6/T11）：`SlopeField(f, n)` 生成方向场（导出为 `locus` 元素）；解曲线用 **数值式** `SolveODE(f, x0, y0, xEnd, step)`（返回可绘制的 `locus`；步长/区间的终点可为负以向左积分）；**二参** `SolveODE(f, 点)` 返回的是**不可求值**的 `function`（NaN、不绘制）——见 [anti-patterns.md](anti-patterns.md) A15。曲线族：`Sequence(SolveODE(f, 0, 0.2*i, 6, 0.05), i, 1, 7)`。
 
 ### 4.9 手动特征分解模式（2×2，规避 CAS 限制）
 
@@ -185,6 +185,25 @@
 - 观察重点：当方向向量与特征方向共线时（叉积 ≈ 0），像与原像共线——方向不变。
 
 常用命令：`Slider`, `Line`, `ApplyMatrix`, `Vector`, `If`, `sqrt`。（不依赖 `Eigenvectors`。）
+
+### 4.10 变上限积分与累积函数模式
+
+适用：变上限积分 Φ(x)=∫ₐˣf、定积分的"累积过程"、原函数的生成。
+
+设计套路：
+
+- 交互变量：下限 `a`、上限 `x`、被积函数 `f`。
+- 基础对象：`f` 的图像。
+- 变化对象：区间 `[a, x]` 上的阴影面积（`Integral(f, a, x)`，数值式即返回面积）、累积点 `(x, Φ(x))`、累积曲线。
+- 观察重点：上限 x 增大时阴影面积累积、累积曲线的斜率恰为 f(x)。
+
+要点（真机实测，T7）：
+
+- 累积曲线**不能**用 `Integral` 直接作函数（反导数 `Integral(f,x)` 求值为 NaN、变限 `Integral(f,a,x)` 不创建，见 [anti-patterns.md](anti-patterns.md) A14）——改用**黎曼和**：`Phi(x) = Sum(f(a + (x - a) * i / n) * (x - a) / n, i, 1, n)`（n ≈ 200），再 `Curve(t, Phi(t), t, a, b)`；
+- 辅助函数 `Phi` 会被自动绘制 → `SetVisibleInView(Phi, 1, false)` 隐藏；
+- 阴影面积用 `Integral(f, a, x)`（数值式，随滑块实时变化）。
+
+常用命令：`Integral`, `Sum`, `Curve`, `Segment`, `Point`, `Text`, `Slider`, `InputBox`。
 
 ## 5. 中文教学意图到命令检索的经验
 

@@ -99,3 +99,15 @@ ZoomIn(-3, -0.5, 3, 10.5)
 - `ZoomIn(<Min x>, <Min y>, <Max x>, <Max y>)` 把可视区固定到这个矩形（x 与 y 比例可不同）。
 - 竖排 N 条区间时，先把纵向间距设为 `h = 10 / N`、用 `k * h` 作纵坐标，就能让总高度恒定，`ZoomIn` 的窗口不用随 N 变。
 - 真机验证方式：读 .ggb 里 `geogebra.xml` 的 `<euclidianView>`（`scale` / `xZero` / `yZero`）确认窗口正确。（v1.5.0 起无头 `--png` 预览改用 GeoGebra 官方 `getPNGBase64`，已能稳定抓取图形视图、不再抓错空白画布。）
+
+## 10. 叠放次序：目标先画（粗）、逼近后画（细）
+
+GeoGebra **按构造先后决定叠放次序**（后定义的画在上面）。当"目标对象"与"逼近对象"在图上重合时（如方波 vs 其 Fourier 部分和），若目标先定义且线更细，就会被后画的逼近曲线**完全盖住、看不见**。
+
+处理（真机实测，T12 Fourier/Gibbs）：
+
+- **先定义目标对象**（如理想方波 `sq(x) = sgn(sin(x))`），设**较粗**线宽（`SetLineThickness(sq, 9)`）；
+- **后定义逼近对象**（部分和），设**较细**线宽（`SetLineThickness(S, 3)`）；
+- 结果：粗的灰色目标带 + 细的红色逼近曲线叠在上面，两者都清晰可见。
+
+> 同理：面积模型用 `Polygon` 会有边线段自动标签的干扰（见 [anti-patterns.md](anti-patterns.md) A17）；构造顺序也决定"谁遮谁"。

@@ -92,7 +92,7 @@ NUM_LIST_ARG = {'Sum': 0, 'Product': 0, 'Mean': 0, 'SD': 0, 'SampleSD': 0,
 FREE_ARG_POS = {'Sequence': 1, 'Zip': 1, 'KeepIf': 1, 'Filter': 1}
 
 HIER = {
-    'Point': {'Object'}, 'Line': {'Object'}, 'Segment': {'Object', 'Line'},
+    'Point': {'Object', 'Vector'}, 'Line': {'Object'}, 'Segment': {'Object', 'Line'},
     'Ray': {'Object', 'Line'}, 'Vector': {'Object', 'Line'},
     'Polygon': {'Object'}, 'Conic': {'Object'}, 'Circle': {'Object', 'Conic'},
     'Number': {'Object'}, 'Boolean': {'Object', 'Number'}, 'Text': {'Object'},
@@ -263,6 +263,12 @@ def check(text):
                 errs.append({'line': i, 'rule': 'arg-count',
                              'message': f'Zip 参数个数应为奇数（表达式 + 变量/列表成对）：当前 {len(args)} 个。',
                              'text': line})
+            continue
+
+        if name in ('SetLineStyle', 'SetLineThickness', 'SetLineType', 'SetFilling',
+                    'SetPointStyle', 'SetPointSize'):
+            # 样式类命令：第一参可为任意「可绘制对象」（函数 / 曲线 / 多边形 / …），
+            # 索引签名只写 Line —— 不做类型检查，避免误报（真机实测，v1.5.1）。
             continue
 
         atypes = [infer(a, env) for a in args]

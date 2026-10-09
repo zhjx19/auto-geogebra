@@ -172,6 +172,25 @@ lamZ = Eigenvalues(AZ)
 vecZ = Eigenvectors(AZ)
 """
 
+CAP_FN_CASES = r"""# 大写用户函数定义 + 调用 + Curve 参数（v1.5.1）
+ffC(x) = x^2
+FC(x) = 2 * ffC(x) + 1
+yyC = FC(2)
+curC = Curve(t, FC(t), t, -1, 2)
+"""
+
+DOT_POINT_CASES = r"""# Dot(点, 点) 引擎可用（v1.5.1）
+PDd = (2, 1)
+UDd = (1, 0)
+dDd = Dot(PDd, UDd)
+"""
+
+STYLE_CMD_CASES = r"""# 样式命令第一参可为函数（v1.5.1）
+fnS(x) = sin(x)
+SetLineStyle(fnS, 1)
+SetLineThickness(fnS, 3)
+"""
+
 CHECKS = 0
 FAILURES = []
 
@@ -407,6 +426,33 @@ def main():
         check("L1 引擎不支持命令：Eigenvalues/Eigenvectors → 2 条 engine-unsupported",
               bool(rep) and len(rep.get("warnings", [])) == 2
               and set(rules_of(rep.get("warnings", []))) == {"engine-unsupported"},
+              json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
+
+        # ---------- 大写用户函数定义 + Curve 参数（v1.5.1） ----------
+        cf2 = os.path.join(tmp, "cap_fn.txt")
+        with open(cf2, "w", encoding="utf-8") as f:
+            f.write(CAP_FN_CASES)
+        rep = run(L1, [cf2])
+        check("L1 大写用户函数定义 + Curve 参数不误报",
+              bool(rep) and rep.get("ok") is True and not rep.get("warnings"),
+              json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
+
+        # ---------- Dot(点, 点)（v1.5.1） ----------
+        dp = os.path.join(tmp, "dot_point.txt")
+        with open(dp, "w", encoding="utf-8") as f:
+            f.write(DOT_POINT_CASES)
+        rep = run(L2, [dp])
+        check("L2 Dot(点, 点) 不误报（引擎按位置向量处理）",
+              bool(rep) and rep.get("semanticErrors") == 0,
+              json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
+
+        # ---------- 样式命令第一参可为函数（v1.5.1） ----------
+        sc = os.path.join(tmp, "style_cmd.txt")
+        with open(sc, "w", encoding="utf-8") as f:
+            f.write(STYLE_CMD_CASES)
+        rep = run(L2, [sc])
+        check("L2 样式命令（SetLineStyle 等）对函数不误报",
+              bool(rep) and rep.get("semanticErrors") == 0,
               json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
 
     print("\n----- 汇总 -----")

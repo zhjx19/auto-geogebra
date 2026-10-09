@@ -1,3 +1,0 @@
-[
-  {"label": "btnRedraw5", "event": "onClick", "script": "SetValue(tick5, tick5 + 1)"}
-]

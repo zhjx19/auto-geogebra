@@ -3,7 +3,7 @@ name: auto-geogebra
 description: Use when 需要把高校数学教学创意转化为可运行的 GeoGebra 动态演示/课件/动画：设计交互变量与滑块、生成并验证 GeoGebra 指令、导出 .ggb 文件（覆盖《高等数学》《线性代数》《概率论与数理统计》与数学专业课程）。触发词：GeoGebra 演示、ggb 课件、动态演示制作、滑块与参数设计、指令校验、导数/积分/线性变换/概率模拟类演示等。不要用于非数学教学用途，也不替代教师自己的教学设计。
 metadata:
   author: 张敬信 (zhjx19)
-  version: "1.5.0"
+  version: "1.5.1"
   source: autos.skills.geogebra v0.3.1 (aardio Autos skill)
 license: Apache-2.0
 ---
@@ -196,7 +196,11 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 - `Element(<点>, n)` 会报错——`Intersect(函数, 函数, a, b)` 唯一交点时返回单个 **Point**；求「f(x)=c 的解」用 `Root(f − c, a, b)`；
 - `Eigenvalues`/`Eigenvectors` 是 **CAS 专属**，导出引擎不支持 → 2×2 手算（L1 已静态提醒）；
 - `Derivative(f, x)` 等中间函数会被**自动画出曲面**，用 `SetVisibleInView(fn, -1, false)` 隐藏；
-- `Sequence`/`Zip` 造的对象列表在 .ggb 里只存定义，核验用 `Length()` 而非数对象。
+- `Sequence`/`Zip` 造的对象列表在 .ggb 里只存定义，核验用 `Length()` 而非数对象；
+- 变上限积分 Φ(x)=∫ₐˣf：`Integral(f, x)`（反导数）作函数求值为 **NaN**、变限 `Integral(f, a, x)` **不创建** → 用黎曼和 `Sum(f(a + (x - a) * i / n) * (x - a) / n, i, 1, n)`；
+- 解曲线：`SolveODE(f, 点)` 返回**不可求值**的 function（不绘制）→ 用 `SolveODE(f, x0, y0, xEnd, step)`（可绘制）；
+- `(0,0) + 向量` 得**向量**、`Point(向量)` 失败 → 求垂足用 `ClosestPoint(<直线>, <点>)`；
+- 为计算而定义的**辅助函数会被自动绘制**（重复曲线/多余曲面）→ `SetVisibleInView(fn, 1, false)`（2D）/`(fn, -1, false)`（3D）隐藏。
 
 ## 输出给教师的推荐格式
 
@@ -246,7 +250,7 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 
 - `scripts/validate_commands.py` — **L1 语法验证器**：括号配对、SetColor 0-1 范围、Text 的 `\n`、Slider 参数、命令拼写、未定义变量，输出 JSON 报告。
 - `scripts/validate_types.py` — **L2 语义（类型）验证器**：用 `data/commands-index.json` 的类型签名检查参数类型、矩阵维度、数值列表；与 L1 组成「双验证」。
-- `scripts/smoke_test.py` — **回归冒烟测试**：好样例 ×3、埋错样例（9 类）、stdin/BOM/GBK 编码边界、命名规则、使用顺序、Zip 循环变量豁免、反三角别名、引擎不支持命令共 **25 项**检查一键复跑；改动验证器后必须全绿（维护者用）。
+- `scripts/smoke_test.py` — **回归冒烟测试**：好样例 ×3、埋错样例（9 类）、stdin/BOM/GBK 编码边界、命名规则、使用顺序、Zip 循环变量豁免、反三角别名、引擎不支持命令、大写用户函数、点内积、样式命令共 **28 项**检查一键复跑；改动验证器后必须全绿（维护者用）。
 - `scripts/build_index.py` — **指令索引重建工具**：从本机 GeoGebra manual（asciidoc）重建 `data/commands-index.json`，支持 `--compare` 与现有索引做字段级对照（维护者用）。
 - `tools/ggb-export/` — **真机导出工具**：零依赖 Node 脚本，调用官方引擎把指令导出为 .ggb 并逐条核验（用法见其 README）。
 - `tools/ggb-export/ggb_patch.py` — **按钮/脚本注入器**：把 GGBScript 注入导出的 .ggb（按钮脚本无法经命令注入，真机实测）。
@@ -274,8 +278,20 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 
 ## 更新记录
 
+### v1.5.1（2026-10-10 · 第二批实跑：6 类新主题）
+- **真机跑通 6 个新主题**：变上限积分函数、正交投影到直线、贝叶斯面积模型、拒绝域与 p 值、Logistic 方程、Fourier 逼近方波与 Gibbs 现象；并**修正方向场写法**（二参 `SolveODE` 不绘制 → 用数值式）。（作品不随技能分发。）
+- **真机实测新坑沉淀**（`references/anti-patterns.md` A14–A18）：
+  - 变上限积分：反导数 `Integral(f,x)` 作函数求值为 **NaN**、变限 `Integral(f,a,x)` 不创建 → 用**黎曼和**近似；
+  - `SolveODE(f, 点)` 返回**不可求值** function（不绘制）→ 用 `SolveODE(f, x0, y0, xEnd, step)`；
+  - `(0,0) + 向量` 得向量、`Point(向量)` 失败 → 垂足用 `ClosestPoint`；
+  - `Polygon` 自动创建边线段且标签默认显示、无法引用隐藏 → 面积模型的杂标签；
+  - 辅助函数被自动绘制 → `SetVisibleInView` 隐藏（泛化 A12）。
+- **修复四类验证器误报**（B6–B8）：大写用户函数定义/调用误当未知命令；`Curve` 参数变量误当未定义；`Dot(点,点)` 与 `SetLineStyle(函数,n)` 误报类型不匹配。
+- **交互/模式扩充**：`interaction-patterns.md` 增「叠放次序：目标先画（粗）、逼近后画（细）」；`patterns.md` 增「变上限积分与累积函数」模式，并修正 ODE 模式（`SolveODE` 数值式）。
+- **回归套件扩至 28 项**（新增大写用户函数、点内积、样式命令 3 组用例）。
+
 ### v1.5.0（2026-10-10 · 实跑打磨：6 类主题真机验证）
-- **新增 6 个真机示例**（覆盖几何定理 / 3D 函数 / 线性变换 / 统计模拟 / 微分方程 5 种创作模式）：拉格朗日中值定理、方向导数与梯度（3D）、行列式与面积、特征向量、置信区间覆盖率、方向场与积分曲线，见 `examples/`。
+- **真机跑通 6 个新主题**（覆盖几何定理 / 3D 函数 / 线性变换 / 统计模拟 / 微分方程 5 种创作模式）：拉格朗日中值定理、方向导数与梯度（3D）、行列式与面积、特征向量、置信区间覆盖率、方向场与积分曲线。（作品不随技能分发，存于使用者侧作品集。）
 - **真机实测新坑沉淀**（`references/anti-patterns.md` A10–A13）：
   - `Intersect(函数,函数,a,b)` 唯一交点返回单个 **Point** → `Element(点,n)` 求值失败；求 `f(x)=c` 的解改用 `Root(f−c,a,b)`；
   - `Eigenvalues`/`Eigenvectors` 为 **CAS 专属**，导出引擎执行失败 → 2×2 手算（patterns.md 4.9）；

@@ -110,7 +110,8 @@ BUILTIN_WORDS = {
 } | BUILTIN_FUNCTIONS
 
 # 迭代型命令：行内的单字母标识符几乎都是循环变量，豁免未定义检查
-ITERATOR_CMDS = {"Sequence", "Sum", "Product", "Zip", "KeepIf", "Filter", "Sort", "CountIf"}
+ITERATOR_CMDS = {"Sequence", "Sum", "Product", "Zip", "KeepIf", "Filter", "Sort", "CountIf",
+                 "Curve", "Function"}
 
 # 本技能真机导出引擎（无头 classic app）**不支持**的命令（真机实测）。
 # 注意：这些命令在指令索引里存在，L2 类型检查不会报错，只有真机执行才暴露。
@@ -175,7 +176,13 @@ def iter_bound_vars(text):
                     break
             j += 1
         args = _split_top_args(text[open_idx + 1:j])
-        pos = list(range(1, len(args), 2)) if fn == "Zip" else _ITER_VAR_POS.get(fn, [])
+        if fn == "Zip":
+            pos = list(range(1, len(args), 2))
+        elif fn in ("Curve", "Function"):
+            # Curve(exprX, exprY, t, a, b)：参数变量是其中的裸标识符（如 t）
+            pos = [k for k, a in enumerate(args) if re.fullmatch(r"[A-Za-z]\w*", a.strip())]
+        else:
+            pos = _ITER_VAR_POS.get(fn, [])
         for p in pos:
             if p < len(args) and re.fullmatch(r"[A-Za-z]\w*", args[p].strip()):
                 names.add(args[p].strip())
@@ -455,7 +462,10 @@ def validate_commands(text):
                     result["ok"] = False
 
         # 6. 未知命令检查
-        if cmd_name and cmd_names:
+        #    `cmd_name` 若为本脚本里定义的变量/函数（首字母大写的用户函数会被误当作
+        #    命令），或形如 `Name(...) = ...` 的定义行，都不是命令调用——跳过。
+        _is_fn_def = bool(re.match(r"^[A-Za-z_]\w*\s*\([^)]*\)\s*[:=]", line))
+        if cmd_name and cmd_names and not _is_fn_def and cmd_name not in defined_vars:
             if cmd_name not in cmd_names:
                 suggestions = []
                 alias_target = COMMAND_ALIASES.get(cmd_name)

@@ -33,5 +33,15 @@
     "id": 7,
     "prompt": "帮我做一个「置信区间覆盖率」的动态模拟，直观展示 95% 置信区间大约有 95% 会盖住真值。",
     "expected": "第零层澄清（分布/样本量/重复次数/置信水平）→ 变量表（n、m、α、真值）→ 指令（Sequence(RandomNormal) 造样本 + Mean 求均值 + Zip 造 m 条区间 + Sum/Zip 统计覆盖率 + 竖线标真值 + ZoomIn 定视图 + tick 变量重抽样按钮）；提醒用 Length() 核验列表、随机结果每次不同；双验证（Zip 循环变量不误报）→ 真机导出。"
+  },
+  {
+    "id": 8,
+    "prompt": "做一个「变上限积分函数」的动态演示：让上限动起来，看阴影面积累积成 Φ(x)，并画出 Φ 的曲线。",
+    "expected": "第零层澄清（被积函数/下限/上限范围）→ 三层工作流 → 指令：阴影面积用 `Integral(f,a,x)`（数值式）；**累积曲线用黎曼和近似** `Phi(x)=Sum(f(a+(x-a)*i/n)*(x-a)/n,i,1,n)`（n≈200）再 `Curve(t,Phi(t),t,a,b)` —— 不能用 `Integral` 作函数（反导数求值 NaN、变限不创建，anti-patterns A14）；辅助函数 `Phi` 用 `SetVisibleInView(Phi,1,false)` 隐藏 → 双验证 → 真机导出。"
+  },
+  {
+    "id": 9,
+    "prompt": "演示 Logistic 方程 y'=y(1−y)：画出方向场和几条解曲线，看解收敛到平衡点。",
+    "expected": "第零层澄清（参数 r、K、初值范围）→ 指令：`SlopeField(f,n)` 方向场；解曲线用**数值式** `SolveODE(f, 0, y0, xEnd, step)`（返回可绘制 locus；二参 `SolveODE(f,点)` 返回不可求值 function 不绘制，anti-patterns A15），曲线族用 `Sequence(SolveODE(f,0,0.2*i,6,0.05),i,1,7)`；平衡线 y=0、y=K 用 `Line`；`ZoomIn` 定视图 → 双验证 → 真机导出。"
   }
 ]
