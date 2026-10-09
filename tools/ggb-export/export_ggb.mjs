@@ -188,6 +188,21 @@ async function main() {
           try { lv = window.ggbApplet.getLabelVisible(args[0]); } catch (e) {}
           return { ok: lv === (args[1] === "true"), note: "ShowLabel 核验：实际=" + lv };
         }
+        if (fname === "SetConditionToShowObject" && args.length >= 2) {
+          var cond = null;
+          try {
+            var xmlC = window.ggbApplet.getXML();
+            var posC = xmlC.indexOf('label="' + args[0] + '"');
+            if (posC >= 0) {
+              var segC = xmlC.slice(posC, posC + 4000);
+              var endC = segC.indexOf("</element>");
+              if (endC >= 0) segC = segC.slice(0, endC);
+              var mC = segC.match(/<condition showObject="([^"]*)"/);
+              if (mC) cond = mC[1];
+            }
+          } catch (e) {}
+          return { ok: cond !== null, note: "SetConditionToShowObject 核验：showObject=" + cond };
+        }
         if (fname === "SetCoords" && args.length >= 3) {
           var x2 = null, y2 = null;
           try {
