@@ -60,7 +60,27 @@ GeoGebra 有 500+ 条指令，还有一批**只有真机才暴露的陷阱**：�
 
 <sub>示例 7 · 抛硬币频率：一键"重新抛掷"，观察频率稳定到 0.5（按钮脚本经 ggb_patch 注入并回读核验）。</sub>
 
-（其余示例：线性变换、球面截交（3D）、按钮割线、泰勒近似，见 [examples/](examples/)。）
+（其余示例见下表——每个 `.ggb` 都可点开直接运行。）
+
+### 案例索引（13 个真实示例，点名字直接打开 .ggb）
+
+| # | 示例 | 类型 | 亮点 | 打开 |
+|---|---|---|---|---|
+| 1 | 导数定义 | 逼近 | 割线趋近切线 | [demo1](examples/demo1-derivative-definition.ggb) |
+| 2 | 线性变换 | 变换 | 矩阵作用于单位正方形 | [demo2](examples/demo2-linear-transform.ggb) |
+| 3 | 球面截交 | 3D | 平面截球面的交线圆 | [demo3](examples/demo3-sphere-cross-section.ggb) |
+| 4 | 按钮割线 | 交互 | 按钮控制取点 | [demo4](examples/demo4-button-secant.ggb) |
+| 5 | 正 n 边形逼近圆 | 逼近 | 播放/停止/重置按钮对 | [demo5](examples/demo5-polygon-circle.ggb) |
+| 6 | 泰勒近似 | 逼近 | 多项式逐阶逼近 | [demo6](examples/demo6-taylor.ggb) |
+| 7 | 抛硬币频率 | 随机模拟 | 频率稳定到 0.5（重抽） | [demo7](examples/demo7-coin-toss.ggb) |
+| 8 | 拉格朗日中值定理 | 几何定理 | 平行弦与切线；`Root` 求中值点 | [demo8](examples/demo8-lagrange-mvt.ggb) |
+| 9 | 方向导数与梯度 | 3D | 梯度方向 = 方向导数最大 | [demo9](examples/demo9-gradient-direction.ggb) |
+| 10 | 行列式与面积 | 变换 | 行列式 = 面积缩放因子 | [demo10](examples/demo10-determinant-area.ggb) |
+| 11 | 特征向量 | 变换 | 方向不变的向量（手算特征分解） | [demo11](examples/demo11-eigenvector.ggb) |
+| 12 | 置信区间覆盖率 | 统计模拟 | 95% 区间覆盖率模拟（重抽样） | [demo12](examples/demo12-confidence-interval.ggb) |
+| 13 | 方向场与积分曲线 | 微分方程 | `SlopeField` + 拖动初值 | [demo13](examples/demo13-slopefield.ggb) |
+
+<sub>示例 8–13 为 v1.5.0「实跑打磨」产物：覆盖几何定理 / 3D 函数 / 线性变换 / 统计模拟 / 微分方程五类创作模式，全部真机导出并回读校验。</sub>
 
 ## 快速开始
 
@@ -114,7 +134,7 @@ npx skills add zhjx19/auto-geogebra
 | 真机验证 | 无 | 有（需环境） | 内置无头导出器：逐条核验 + 回读 + 预览图 |
 | 已知陷阱 | 现编现错 | — | 真机实测规则库（向量化 / 保留名 / 退化初值 / 脚本静默失败） |
 | 交互按钮 | 无 | 手动 | `ggb_patch.py` 注入 onClick / onUpdate 脚本 |
-| 教学场景 | 通用 | 通用 | 需求澄清 + 变量设计 + 28 个高校数学主题路由 |
+| 教学场景 | 通用 | 通用 | 需求澄清 + 变量设计 + 29 个高校数学主题路由 |
 | 输出 | 一段文本 | 执行结果 | 可双击打开的 .ggb + 预览 + 双验证摘要 |
 
 ## 安全边界
@@ -132,7 +152,7 @@ auto-geogebra/
 ├── SKILL.md                      # 主工作流：需求澄清 → 变量设计 → 实现 → 双验证 → 导出
 ├── test-prompts.json             # 7 个真实测试场景（含预期行为）
 ├── references/
-│   ├── course-routing.md         # 28 个高校数学主题路由表（典型变化 + 核心变量 + 常用指令）
+│   ├── course-routing.md         # 29 个高校数学主题路由表（典型变化 + 核心变量 + 常用指令）
 │   ├── command-validation.md     # 指令静态验证检查清单
 │   ├── anti-patterns.md          # 常见失败与反例清单（引擎坑 / 验证坑 / 教学反例）
 │   ├── patterns.md               # 6 大教学创作模式库

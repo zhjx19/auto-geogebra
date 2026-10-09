@@ -307,31 +307,57 @@ async function main() {
       }
     } catch (e) {}
 
-    // 3.5) 可选：导出预览 PNG（CDP 截取画布区域）
+    // 3.5) 可选：导出预览 PNG
+    //   优先用 GeoGebra 官方 API getPNGBase64() 直接取图形视图——无头 classic 布局下
+    //   "最大 canvas"可能是空白代数区，靠 canvas 猜测会抓错画面（真机实测，T5 预览空白）。
+    //   官方 API 失败时再回退到 CDP 截取画布。
     let pngWritten = null;
     if (args.png) {
       try {
-        await cdp.send("Page.enable");
-        const rect = await evalJS(`(function(){
-          var cs = [].slice.call(document.querySelectorAll("canvas"));
-          var best = null;
-          cs.forEach(function(c){
-            var r = c.getBoundingClientRect();
-            if (r.width * r.height < 100) return;
-            if (!best || r.width * r.height > best.width * best.height) best = { x: r.x, y: r.y, width: r.width, height: r.height };
-          });
-          return best;
-        })()`);
-        const shotParams = rect && rect.width > 10
-          ? { format: "png", clip: { x: rect.x, y: rect.y, width: rect.width, height: rect.height, scale: 1 } }
-          : { format: "png" };
-        const shot = await cdp.send("Page.captureScreenshot", shotParams);
-        if (shot && shot.data) {
-          writeFileSync(resolve(args.png), Buffer.from(shot.data, "base64"));
+        const dataUrl = await evalJS(`(function(){
+          try {
+            var a = window.ggbApplet;
+            if (typeof a.getPNGBase64 !== "function") return null;
+            var r = a.getPNGBase64(1, false, 300);
+            if (typeof r === "string" && r) return r;
+          } catch (e) {}
+          return null;
+        })()`, { awaitPromise: true });
+        if (dataUrl) {
+          const comma = dataUrl.indexOf(",");
+          const b64 = comma >= 0 ? dataUrl.slice(comma + 1) : dataUrl;
+          writeFileSync(resolve(args.png), Buffer.from(b64, "base64"));
           pngWritten = resolve(args.png);
         }
-      } catch (e) {
-        pngWritten = null;
+      } catch (e) { pngWritten = null; }
+
+      if (!pngWritten) {
+        // 回退：CDP 截取"有内容"的图形画布（排除过小/滚出视口的空白画布，计入滚动偏移）
+        try {
+          await cdp.send("Page.enable");
+          const rect = await evalJS(`(function(){
+            var cs = [].slice.call(document.querySelectorAll("canvas"));
+            var best = null;
+            cs.forEach(function(c){
+              var r = c.getBoundingClientRect();
+              var area = r.width * r.height;
+              if (area < 10000 || r.width < 50 || r.height < 50) return;
+              if (r.x < -50 || r.y < -50) return;
+              if (!best || area > best.area) best = { x: r.x + window.scrollX, y: r.y + window.scrollY, width: r.width, height: r.height, area: area };
+            });
+            return best;
+          })()`);
+          const shotParams = rect && rect.width > 10
+            ? { format: "png", clip: { x: rect.x, y: rect.y, width: rect.width, height: rect.height, scale: 1 } }
+            : { format: "png" };
+          const shot = await cdp.send("Page.captureScreenshot", shotParams);
+          if (shot && shot.data) {
+            writeFileSync(resolve(args.png), Buffer.from(shot.data, "base64"));
+            pngWritten = resolve(args.png);
+          }
+        } catch (e) {
+          pngWritten = null;
+        }
       }
     }
 

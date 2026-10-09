@@ -38,7 +38,7 @@ license: Apache-2.0
 
 > 完成标准（第零层）：需求确认单同时包含「已识别信息」与「⚠️ 待确认问题」两类内容，且所有待确认问题都已获得教师明确答复。任一条件不满足，不得进入下一层。
 
-> 已有固化的课程主题路由表可作为参考：[references/course-routing.md](references/course-routing.md)（包含 28 个高校数学主题的「典型变化 + 核心变量 + 常用指令」）。若主题不在表中，直接基于数学知识分析。
+> 已有固化的课程主题路由表可作为参考：[references/course-routing.md](references/course-routing.md)（包含 29 个高校数学主题的「典型变化 + 核心变量 + 常用指令」）。若主题不在表中，直接基于数学知识分析。
 
 ### 第一层：定性意图（想看到什么变化）
 
@@ -253,7 +253,7 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 - `references/interaction-patterns.md` — **交互增强模式库**：重置按钮、重抽、开始/停止对（动画 + speed 变量 + onUpdate）、累积按钮、输入框参数。
 - `data/commands-index.json` — 约 500 条 GeoGebra 指令索引（名称、语法、说明、示例），供验证脚本与查询命令使用。
 - `data/zh-command-aliases.json` — 中文教学意图 → 英文 GeoGebra 命令的启发式映射，例如"切线/割线/斜率" → `Tangent, Line, Slope, Derivative, Segment`。
-- `references/course-routing.md` — 28 个高校数学主题路由表（典型变化 + 核心变量 + 常用指令）。
+- `references/course-routing.md` — 29 个高校数学主题路由表（典型变化 + 核心变量 + 常用指令）。
 - `references/command-validation.md` — 指令静态验证检查清单（括号配对、SetColor 颜色、Slider 参数、Text 换行、未知命令、未定义变量等）。
 - `references/anti-patterns.md` — **常见失败与反例清单**：引擎语法坑（真机实测）、验证行为坑、教学设计反例、速查表。
 - `references/patterns.md` — 6 大教学创作模式库（逼近、局部线性化、面积/体积、参数曲线曲面、线性变换、随机模拟）。
@@ -285,6 +285,8 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 - **修复两类验证器误报**（B4/B5）：Zip/Sequence **绑定循环变量**（含多字符名如 `mm`）不再误报未定义；Zip 交替签名改做结构检查；补入反三角长拼写别名 `arcsin/arccos/arctan/…`。
 - **交互模式扩充**：`references/interaction-patterns.md` 增「tick 变量驱动重抽样」与「`ZoomIn(minx,miny,maxx,maxy)` 视图窗口控制」。
 - **创作模式扩充**：`references/patterns.md` 增统计推断与覆盖率模拟、方向场与积分曲线、手动特征分解三种模式。
+- **课程路由补全**（28 → 29 主题）：新增「常微分方程 · 方向场与积分曲线」；修正「特征值/二次型」不再推荐 CAS 专属的 `Eigenvalues`/`Eigenvectors`（改手算）；中值定理（用 `Root` 而非 `Element`）、方向导数（隐藏偏导曲面）、置信区间（`ZoomIn`/tick/`Length`）三条目补真机提示。
+- **修复 `--png` 预览**：无头预览改为优先调用官方 `getPNGBase64()` 取图形视图，修掉"按最大 canvas 猜画布 → 抓到空白代数区"的问题（真机实测 2D/3D 预览均已正确）。
 - **回归套件扩至 25 项**（新增 Zip 循环变量豁免、反三角别名、引擎不支持命令 3 组用例）。
 
 ### v1.4.3（2026-09-25 · 提速减步）

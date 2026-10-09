@@ -98,4 +98,4 @@ ZoomIn(-3, -0.5, 3, 10.5)
 
 - `ZoomIn(<Min x>, <Min y>, <Max x>, <Max y>)` 把可视区固定到这个矩形（x 与 y 比例可不同）。
 - 竖排 N 条区间时，先把纵向间距设为 `h = 10 / N`、用 `k * h` 作纵坐标，就能让总高度恒定，`ZoomIn` 的窗口不用随 N 变。
-- 真机验证方式：读 .ggb 里 `geogebra.xml` 的 `<euclidianView>`（`scale` / `xZero` / `yZero`）确认窗口正确——**这比截图可靠**（无头预览截图可能抓错画布，见 anti-patterns 说明）。
+- 真机验证方式：读 .ggb 里 `geogebra.xml` 的 `<euclidianView>`（`scale` / `xZero` / `yZero`）确认窗口正确。（v1.5.0 起无头 `--png` 预览改用 GeoGebra 官方 `getPNGBase64`，已能稳定抓取图形视图、不再抓错空白画布。）
