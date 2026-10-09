@@ -1,0 +1,3 @@
+[
+  {"label": "btnDir2", "event": "onClick", "script": "SetValue(th2, atan2(gy2, gx2) * 180 / pi)"}
+]

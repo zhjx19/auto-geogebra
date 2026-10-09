@@ -136,6 +136,56 @@
 
 常用命令：`Sequence`, `RandomDiscrete`, `Histogram`, `BarChart`, `BinomialDist`, `Poisson`, `FitLine`, `Mean`, `SD`。
 
+### 4.7 统计推断与覆盖率模拟模式
+
+适用：样本均值抽样分布、**置信区间覆盖率**、假设检验的拒绝域与 p 值、一类/二类错误。
+
+设计套路：
+
+- 交互变量：样本量 `n`、重复次数 `m`、置信水平、真值 `mu0`、分布参数。
+- 基础对象：一串随机样本（`Sequence(RandomNormal(...), …)`）。
+- 变化对象：每条样本一个置信区间（横条），一条竖线标出真值。
+- 观察重点：单条区间时好时坏（随机性），多条一起看覆盖率稳定在 1−α 附近（大数定律 + 频率稳定）。
+
+常用命令：`Sequence`, `RandomNormal`, `Mean`, `Element`, `Zip`, `Sum`, `CountIf`, `Segment`, `ZoomIn`。
+
+要点（真机实测，T5）：
+
+- 竖排 m 条区间时用 `k * (10 / m)` 作纵坐标压住总高度，再用 `ZoomIn(-3, -0.5, 3, 10.5)` 定视图；
+- 覆盖率 = `Sum(Zip(If(abs(mm - mu0) <= moe, 1, 0), mm, means)) / m`；
+- 重抽样按钮用 `tick` 变量驱动重算（见 interaction-patterns.md 第 8 节）；
+- `Sequence`/`Zip` 造的区间列表在 .ggb 里只存定义，用 `Length()` 核验而非数对象。
+
+### 4.8 方向场与积分曲线模式（常微分方程）
+
+适用：一阶微分方程方向场、解曲线族、Logistic 方程、平衡点与稳定性、相线图。
+
+设计套路：
+
+- 交互变量：可拖动的初始点、方程参数。
+- 基础对象：方向场 `SlopeField(f(x,y), n)`。
+- 变化对象：过初始点的积分曲线 `SolveODE(f, P0)`。
+- 观察重点：方向场决定"水流方向"，积分曲线顺着它走；拖动起点看到不同解曲线。
+
+常用命令：`SlopeField`, `SolveODE`, `Curve`, `Point`, `Segment`。
+
+要点（真机实测，T6）：`SlopeField(y - y^2, 15)` 生成方向场（导出为 `locus` 元素）；`SolveODE(f, P0)` 以可拖动点 `P0` 为初值返回解曲线（`function` 元素）；两者在经典引擎下均可导出。
+
+### 4.9 手动特征分解模式（2×2，规避 CAS 限制）
+
+适用：特征值/特征向量、不变方向、对角化、二次型主轴。
+
+设计套路：
+
+- 因 `Eigenvalues`/`Eigenvectors` 是 CAS 专属、导出引擎（无头 classic app）**执行失败**（真机实测），2×2 一律手算：
+  - `tr = a11 + a22`，`det = a11*a22 − a12*a21`，`disc = tr^2 − 4*det`；
+  - `root = If(disc >= 0, sqrt(disc), 0)`（防复数），`λ1 = (tr + root)/2`，`λ2 = (tr − root)/2`；
+  - 特征向量方向：`(a12, λ − a11)`（a12 ≠ 0 时），否则 `(λ − a22, a21)`；过原点画线即不变方向。
+- 交互变量：矩阵元素（4 个滑块）、一个角度滑块给出试探方向。
+- 观察重点：当方向向量与特征方向共线时（叉积 ≈ 0），像与原像共线——方向不变。
+
+常用命令：`Slider`, `Line`, `ApplyMatrix`, `Vector`, `If`, `sqrt`。（不依赖 `Eigenvectors`。）
+
 ## 5. 中文教学意图到命令检索的经验
 
 教师通常说中文，例如“我想让学生看到割线逼近切线”。技能包应先识别中文关键词，再联想到英文 GeoGebra 命令。高频映射（切线/面积/序列/曲面/线性变换/随机分布等）见 [SKILL.md 的「中文教学意图 → 英文命令快速映射」](../../SKILL.md)；完整映射见 `data/zh-command-aliases.json`。

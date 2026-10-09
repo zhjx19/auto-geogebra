@@ -3,7 +3,7 @@ name: auto-geogebra
 description: Use when 需要把高校数学教学创意转化为可运行的 GeoGebra 动态演示/课件/动画：设计交互变量与滑块、生成并验证 GeoGebra 指令、导出 .ggb 文件（覆盖《高等数学》《线性代数》《概率论与数理统计》与数学专业课程）。触发词：GeoGebra 演示、ggb 课件、动态演示制作、滑块与参数设计、指令校验、导数/积分/线性变换/概率模拟类演示等。不要用于非数学教学用途，也不替代教师自己的教学设计。
 metadata:
   author: 张敬信 (zhjx19)
-  version: "1.4.3"
+  version: "1.5.0"
   source: autos.skills.geogebra v0.3.1 (aardio Autos skill)
 license: Apache-2.0
 ---
@@ -76,7 +76,7 @@ license: Apache-2.0
 
    | 层 | 检查内容 | 通过标准 |
    |---|---|---|
-   | L1 语法 | 括号配对、SetColor 0-1 范围、Text 的 `\n`、Slider 参数、命令拼写、未定义变量、命名规则、使用顺序与退化预检（v1.3+） | `ok == true` |
+   | L1 语法 | 括号配对、SetColor 0-1 范围、Text 的 `\n`、Slider 参数、命令拼写、未定义变量、命名规则、使用顺序与退化预检（v1.3+）、引擎不支持命令（v1.5+） | `ok == true` |
    | L2 语义 | 参数类型不匹配、矩阵维度错配、对几何对象列表求和 | `semanticErrors == 0` |
 
    - `<SKILL_DIR>` 为本技能所在目录（Windows 下 `~` 即 `C:\Users\<你的用户名>`；WorkBuddy：`~/.workbuddy/skills/auto-geogebra`；opencode：`~/.config/opencode/skills/auto-geogebra`；OpenClaw/AutoClaw：`~/.openclaw-autoclaw/skills/auto-geogebra`）。脚本按自身位置自动定位 `data/commands-index.json`，无需额外传参；并自动处理 UTF-8 BOM 与 GBK/GB18030 编码的指令文件与管道输入。
@@ -192,7 +192,11 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 - 脚本命令（`SetValue` 等）**返回值不可信**，效果真实生效（用 getter 核验）；
 - 二参 `Button("标题","脚本")` 不受支持（`Button("标题")` + `ggb_patch.py` 注入）；
 - 滑块必须写 `Slider(min, max, step)`；`Text()` 换行用 LaTeX `\\`；多语句脚本用**换行**分隔；
-- `e` / `pi` 等内置常量名不能作对象名（用 `eVal` / `piVal`）。
+- `e` / `pi` 等内置常量名不能作对象名（用 `eVal` / `piVal`）；
+- `Element(<点>, n)` 会报错——`Intersect(函数, 函数, a, b)` 唯一交点时返回单个 **Point**；求「f(x)=c 的解」用 `Root(f − c, a, b)`；
+- `Eigenvalues`/`Eigenvectors` 是 **CAS 专属**，导出引擎不支持 → 2×2 手算（L1 已静态提醒）；
+- `Derivative(f, x)` 等中间函数会被**自动画出曲面**，用 `SetVisibleInView(fn, -1, false)` 隐藏；
+- `Sequence`/`Zip` 造的对象列表在 .ggb 里只存定义，核验用 `Length()` 而非数对象。
 
 ## 输出给教师的推荐格式
 
@@ -242,7 +246,7 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 
 - `scripts/validate_commands.py` — **L1 语法验证器**：括号配对、SetColor 0-1 范围、Text 的 `\n`、Slider 参数、命令拼写、未定义变量，输出 JSON 报告。
 - `scripts/validate_types.py` — **L2 语义（类型）验证器**：用 `data/commands-index.json` 的类型签名检查参数类型、矩阵维度、数值列表；与 L1 组成「双验证」。
-- `scripts/smoke_test.py` — **回归冒烟测试**：好样例 ×3、埋错样例（9 类）、stdin/BOM/GBK 编码边界、命名规则、使用顺序共 22 项检查一键复跑；改动验证器后必须全绿（维护者用）。
+- `scripts/smoke_test.py` — **回归冒烟测试**：好样例 ×3、埋错样例（9 类）、stdin/BOM/GBK 编码边界、命名规则、使用顺序、Zip 循环变量豁免、反三角别名、引擎不支持命令共 **25 项**检查一键复跑；改动验证器后必须全绿（维护者用）。
 - `scripts/build_index.py` — **指令索引重建工具**：从本机 GeoGebra manual（asciidoc）重建 `data/commands-index.json`，支持 `--compare` 与现有索引做字段级对照（维护者用）。
 - `tools/ggb-export/` — **真机导出工具**：零依赖 Node 脚本，调用官方引擎把指令导出为 .ggb 并逐条核验（用法见其 README）。
 - `tools/ggb-export/ggb_patch.py` — **按钮/脚本注入器**：把 GGBScript 注入导出的 .ggb（按钮脚本无法经命令注入，真机实测）。
@@ -269,6 +273,19 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 | 随机/分布/直方图 | `RandomDiscrete`, `Histogram`, `BarChart`, `BinomialDist`, `Poisson` |
 
 ## 更新记录
+
+### v1.5.0（2026-10-10 · 实跑打磨：6 类主题真机验证）
+- **新增 6 个真机示例**（覆盖几何定理 / 3D 函数 / 线性变换 / 统计模拟 / 微分方程 5 种创作模式）：拉格朗日中值定理、方向导数与梯度（3D）、行列式与面积、特征向量、置信区间覆盖率、方向场与积分曲线，见 `examples/`。
+- **真机实测新坑沉淀**（`references/anti-patterns.md` A10–A13）：
+  - `Intersect(函数,函数,a,b)` 唯一交点返回单个 **Point** → `Element(点,n)` 求值失败；求 `f(x)=c` 的解改用 `Root(f−c,a,b)`；
+  - `Eigenvalues`/`Eigenvectors` 为 **CAS 专属**，导出引擎执行失败 → 2×2 手算（patterns.md 4.9）；
+  - `Derivative(f,x)` 等中间函数会自动画出曲面 → `SetVisibleInView(fn,-1,false)` 隐藏；
+  - `Sequence`/`Zip` 的对象列表在 .ggb 里只存定义、计数不到 → 用 `Length()` 核验。
+- **L1 新增静态规则「引擎不支持命令」**（`Eigenvalues`/`Eigenvectors`），把真机坑前移为可拦截项。
+- **修复两类验证器误报**（B4/B5）：Zip/Sequence **绑定循环变量**（含多字符名如 `mm`）不再误报未定义；Zip 交替签名改做结构检查；补入反三角长拼写别名 `arcsin/arccos/arctan/…`。
+- **交互模式扩充**：`references/interaction-patterns.md` 增「tick 变量驱动重抽样」与「`ZoomIn(minx,miny,maxx,maxy)` 视图窗口控制」。
+- **创作模式扩充**：`references/patterns.md` 增统计推断与覆盖率模拟、方向场与积分曲线、手动特征分解三种模式。
+- **回归套件扩至 25 项**（新增 Zip 循环变量豁免、反三角别名、引擎不支持命令 3 组用例）。
 
 ### v1.4.3（2026-09-25 · 提速减步）
 - 新增「**版面预算（免截图巡检）**」规则：不再反复截图检查文字遮挡/位置，不为版面微调重新导出（教师可自行拖动对象、缩放窗口）；版面只守数量预算（核心控件 ≤5、动态文本 ≤5、能不显示的不显示），功能性问题（图形没出来、对象缺失、数值不对、按钮无反应）才改了重导。

@@ -255,6 +255,16 @@ def check(text):
                              'text': line})
             continue
 
+        if name == 'Zip':
+            # Zip(expr, var1, list1, var2, list2, …)：变量位与列表位交替，
+            # 表达式位可为几何对象。通用类型签名不适用，只做结构检查
+            # （参数个数应为奇数：表达式 + 成对的 变量/列表），避免误报。
+            if len(args) < 3 or len(args) % 2 == 0:
+                errs.append({'line': i, 'rule': 'arg-count',
+                             'message': f'Zip 参数个数应为奇数（表达式 + 变量/列表成对）：当前 {len(args)} 个。',
+                             'text': line})
+            continue
+
         atypes = [infer(a, env) for a in args]
         free_pos = FREE_ARG_POS.get(name, 0)
         ok_any = False

@@ -16,6 +16,10 @@
 | A7 | `Text("...\n...")` 不换行 | `Text()` 不支持 `\n` | 用 LaTeX `\\` 换行（多行对齐用 `\begin{aligned}`） |
 | A8 ⚙️ | 定义 `e = 5` 后内置自然常数失效；`pi = 3` 变成方程对象 | 与内置**常量名**重名 | 用 `eVal` / `piVal` 等别名 |
 | A9 | 多语句脚本只执行第一条 / 报错 | GGBScript 语句分隔符 | 用**换行**分隔（分号不行） |
+| A10 ⚙️ | `Element(hitM, 1)` 报错，即便区间内只有一个交点 | `Intersect(<函数>, <函数>, a, b)` 在**唯一交点**时返回**单个 Point**（不是 List）；`Element(Point, n)` 求值即失败，`If(IsDefined(Element(point,1)), …)` 也救不了 | 需要"解 f(x)=c"用 `Root(f − c, a, b)` 取**数值**（真机实测，T1 拉格朗日中值定理） |
+| A11 ⚙️ | `Eigenvalues(...)` / `Eigenvectors(...)` 执行失败，即使用字面量矩阵 | 二者为 **CAS 专属**，本技能导出引擎（无头 classic app）不支持；索引里有、L2 不报错，只有真机才暴露 | 2×2 手算：`tr=a11+a22`，`det=a11*a22−a12*a21`，`λ=(tr±√(tr²−4·det))/2`；特征向量方向 `(a12, λ−a11)`（a12≠0 时，否则 `(λ−a22, a21)`）；用 `If(det>=0, sqrt(disc), 0)` 防复数。L1 现已静态提醒（真机实测，T4 特征向量） |
+| A12 ⚙️ | 图形区冒出莫名其妙的曲面 / 直线 | `Derivative(f, x)` 等中间函数**本身可绘制**，会作为曲面/曲线自动显示 | `SetVisibleInView(fn, -1, false)`（3D）/ `SetVisibleInView(fn, 1, false)`（2D）隐藏（真机实测，T2 方向导数） |
+| A13 ⚙️ | 导出报告 `ok`、对象数却没变，怀疑 `Sequence`/`Zip` 列表为空 | 用 `Sequence`/`Zip` 造出的**对象列表**（线段、点）在 .ggb 里只存**定义**（`<command>`），不逐个列为元素；`objectsBefore/After` 也数不到——**空列表与满列表长得一样** | 用 `Length(列表)` 核验元素个数，或看预览图 / 导入 GeoGebra 确认（真机实测，T5 置信区间） |
 
 ## B. 验证行为坑
 
@@ -24,6 +28,8 @@
 | B1 | L1 对 `Polygon(Sequence(…, k, …))` 报「单字母变量未定义」 | 嵌套迭代变量的历史误报 | v1.4.1 已修复（迭代命令内豁免）；若仍出现，按 `command-validation.md` 人工复核 |
 | B2 | 静态验证全绿，导入引擎仍失败 | 静态验证**覆盖不到**：GGBScript 脚本、自定义工具、复杂 `Locus`、3D 交线、`Zip` 嵌套等 | 静态只是下限；交付前用 `tools/ggb-export` 实跑（或 ggbgen / 本地导入确认） |
 | B3 | 换机器后验证器报找不到索引 | 索引按脚本位置自动定位（相对结构） | 保持技能目录结构完整；或参考脚本内候选路径改用环境变量/传参 |
+| B4 | L1 报 `Zip(... mm ...)` 变量「使用前未定义」、L2 报 `Zip 参数类型不匹配`（(Line, Unknown, List, …)） | 迭代命令**绑定的循环变量**被误当未定义变量；Zip「变量位/列表位交替」的签名不适用通用类型匹配 | **v1.5.0 已修复**：L1 提取 Zip/Sequence/… 的绑定变量并豁免（含多字符名，如 `mm`）；L2 对 Zip 只做结构检查（参数个数为奇数） |
+| B5 | L1 报 `arctan` / `arcsin` / `arccos` … 「使用前未定义」 | 反三角**长拼写别名**不在内置函数表 | **v1.5.0 已修复**（补入 `arcsin/arccos/arctan/arccot/arcsec/arccsc`） |
 
 ## C. 教学设计反例（评审视角）
 

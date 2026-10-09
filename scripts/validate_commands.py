@@ -82,6 +82,8 @@ BUILTIN_FUNCTIONS = {
     "sin", "cos", "tan", "cot", "sec", "csc",
     # 反三角
     "asin", "acos", "atan", "acot", "asec", "acsc", "atan2",
+    # 反三角的长拼写别名（GeoGebra 两者皆可，真机实测通过）
+    "arcsin", "arccos", "arctan", "arccot", "arcsec", "arccsc",
     # 双曲
     "sinh", "cosh", "tanh", "coth", "sech", "csch",
     # 反双曲
@@ -109,6 +111,75 @@ BUILTIN_WORDS = {
 
 # 迭代型命令：行内的单字母标识符几乎都是循环变量，豁免未定义检查
 ITERATOR_CMDS = {"Sequence", "Sum", "Product", "Zip", "KeepIf", "Filter", "Sort", "CountIf"}
+
+# 本技能真机导出引擎（无头 classic app）**不支持**的命令（真机实测）。
+# 注意：这些命令在指令索引里存在，L2 类型检查不会报错，只有真机执行才暴露。
+# 静态提醒可把它前移成可拦截项。
+ENGINE_UNSUPPORTED = {
+    "Eigenvalues": "CAS 专属，本技能导出引擎不支持；2×2 可用手算 λ=(tr±√(tr²−4·det))/2（tr=a11+a22, det=a11·a22−a12·a21）",
+    "Eigenvectors": "CAS 专属，本技能导出引擎不支持；特征向量方向可用 (a12, λ−a11)（a12≠0 时）手算",
+}
+
+# 迭代命令的「循环变量」参数位置（0-based）：这些名字由命令自身绑定
+_ITER_VAR_POS = {"Sequence": [1], "Sum": [1], "Product": [1], "KeepIf": [1], "CountIf": [1]}
+
+
+def _split_top_args(text):
+    """按顶层逗号切分参数（忽略括号内与字符串内的逗号）。"""
+    args, buf, depth, in_str = [], [], 0, False
+    for ch in text:
+        if in_str:
+            buf.append(ch)
+            if ch == '"':
+                in_str = False
+        elif ch == '"':
+            in_str = True
+            buf.append(ch)
+        elif ch in "([":
+            depth += 1
+            buf.append(ch)
+        elif ch in ")]":
+            depth -= 1
+            buf.append(ch)
+        elif ch == "," and depth == 0:
+            args.append("".join(buf))
+            buf = []
+        else:
+            buf.append(ch)
+    if buf:
+        args.append("".join(buf))
+    return args
+
+
+def iter_bound_vars(text):
+    """提取迭代命令调用绑定的循环变量名（供「未定义变量」检查豁免）。
+
+    这些名字由命令本身定义，不是"使用前未定义"。Zip 的变量位与列表位交替
+    出现（第 2、4、6… 个参数），Sequence/Sum/… 的变量在第 2 个参数。
+    兼容多字符变量名（如 Zip(..., mm, means, ...) 中的 mm）。
+    """
+    names = set()
+    for m in re.finditer(r"\b([A-Za-z]\w*)\s*[\(\[]", text):
+        fn = m.group(1)
+        if fn not in ITERATOR_CMDS:
+            continue
+        open_idx = m.end() - 1
+        depth, j = 0, open_idx
+        while j < len(text):
+            ch = text[j]
+            if ch in "([":
+                depth += 1
+            elif ch in ")]":
+                depth -= 1
+                if depth == 0:
+                    break
+            j += 1
+        args = _split_top_args(text[open_idx + 1:j])
+        pos = list(range(1, len(args), 2)) if fn == "Zip" else _ITER_VAR_POS.get(fn, [])
+        for p in pos:
+            if p < len(args) and re.fullmatch(r"[A-Za-z]\w*", args[p].strip()):
+                names.add(args[p].strip())
+    return names
 
 
 def load_command_index():
@@ -404,6 +475,14 @@ def validate_commands(text):
                     "text": line, "suggestions": suggestions[:5],
                 })
 
+        # 6.5 引擎不支持命令提醒（真机实测）：索引里有、但导出引擎（无头 classic app）执行失败
+        if cmd_name in ENGINE_UNSUPPORTED:
+            result["warnings"].append({
+                "line": i, "severity": "warning", "rule": "engine-unsupported",
+                "message": f"命令 '{cmd_name}' 为 CAS 专属，本技能真机导出引擎不支持：{ENGINE_UNSUPPORTED[cmd_name]}",
+                "text": line,
+            })
+
         # 7. 未定义变量引用检查（对含命令调用的行同样生效）
         #    先剥离字符串与 LaTeX 记号再扫描标识符；已知命令名、内置常量、
         #    迭代型命令行上的单字母循环变量、本行定义均豁免。
@@ -412,6 +491,7 @@ def validate_commands(text):
         # 单字母迭代变量豁免：迭代命令出现在顶层或其嵌套调用中均可
         # （如 polyN = Polygon(Sequence(..., k, ...))）
         allow_single_letter = cmd_name in ITERATOR_CMDS or any(_it in line for _it in ITERATOR_CMDS)
+        iter_vars = iter_bound_vars(line)
         for var_name in re.findall(r"[A-Za-z][\w]*", stripped_line):
             if var_name in BUILTIN_WORDS:
                 continue
@@ -423,6 +503,8 @@ def validate_commands(text):
                 continue  # 别名误写已由规则 6 单独提示
             if allow_single_letter and len(var_name) == 1:
                 continue
+            if var_name in iter_vars:
+                continue  # 迭代命令绑定的循环变量（含多字符名，如 Zip 的 mm）
             if var_name in defined_vars:
                 if defined_vars[var_name] > i:
                     result["warnings"].append({

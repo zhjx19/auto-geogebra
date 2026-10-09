@@ -70,3 +70,32 @@
 SetCoords(btnReset, 40, 80)
 SetCoords(btnRand, 40, 140)
 ```
+
+## 8. 重新抽样 / 重绘（tick 变量驱动重算）
+
+GeoGebra 的 `RandomNormal` / `RandomUniform` 只在表达式**重新求值**时才重掷。
+让一个按钮强制重掷的做法：引入一个"脏变量" `tick`，把它以 `+ 0 * tick` 的形式塞进随机表达式，按钮只改 `tick` —— 依赖链被推动，随机数就重掷了：
+
+```
+tick = 0
+samples = Sequence(RandomNormal(mu, sigma) + 0 * tick, j, 1, n)
+```
+
+```json
+{"label": "btnRedraw", "event": "onClick", "script": "SetValue(tick, tick + 1)"}
+```
+
+- 注意：随机结果每次打开 .ggb 都不同，属正常；课堂讲"频率稳定"时反而要强调这一点。
+- 本章模式来自 T5 置信区间覆盖率演示的真机实现（v1.5.0）。
+
+## 9. 视图窗口控制（大范围内容防"跑出屏幕"）
+
+当演示里最长/最高的对象把坐标系撑得很大（例如 40 条置信区间竖排到 y=40），默认视图会把主体挤成一条缝。用 4 参数 `ZoomIn` 显式设定视图窗口：
+
+```
+ZoomIn(-3, -0.5, 3, 10.5)
+```
+
+- `ZoomIn(<Min x>, <Min y>, <Max x>, <Max y>)` 把可视区固定到这个矩形（x 与 y 比例可不同）。
+- 竖排 N 条区间时，先把纵向间距设为 `h = 10 / N`、用 `k * h` 作纵坐标，就能让总高度恒定，`ZoomIn` 的窗口不用随 N 变。
+- 真机验证方式：读 .ggb 里 `geogebra.xml` 的 `<euclidianView>`（`scale` / `xZero` / `yZero`）确认窗口正确——**这比截图可靠**（无头预览截图可能抓错画布，见 anti-patterns 说明）。

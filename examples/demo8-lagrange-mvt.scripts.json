@@ -1,0 +1,3 @@
+[
+  {"label": "btnMvt", "event": "onClick", "script": "SetValue(cM, mvtX)"}
+]

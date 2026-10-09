@@ -154,6 +154,24 @@ RANDOM_CASES = r"""# 引擎支持命令用例：Random（v1.4.2）
 r0 = Random(0, 1)
 """
 
+ZIP_MULTI_VAR = r"""# Zip 多字符循环变量豁免（v1.5.0）
+meansZ = {0.1, -0.2, 0.3}
+moeZ = 0.5
+segsZ = Zip(Segment((mm - moeZ, k), (mm + moeZ, k)), mm, meansZ, k, {1, 2, 3})
+"""
+
+INVTRIG_CASES = r"""# 反三角长拼写别名（arctan 等，v1.5.0）
+gxZ = 2
+gyZ = 3
+angZ = arctan(gyZ / gxZ)
+"""
+
+ENGINE_UNSUPPORTED_CASES = r"""# 引擎不支持命令（CAS 专属，v1.5.0）
+AZ = {{2, 1}, {1, 2}}
+lamZ = Eigenvalues(AZ)
+vecZ = Eigenvectors(AZ)
+"""
+
 CHECKS = 0
 FAILURES = []
 
@@ -359,6 +377,36 @@ def main():
         rep = run(L1, [rnd])
         check("L1 引擎命令识别：Random 不误报",
               bool(rep) and rep.get("ok") is True and not rep.get("warnings"),
+              json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
+
+        # ---------- Zip 多字符循环变量豁免（v1.5.0） ----------
+        zp = os.path.join(tmp, "zip_multi.txt")
+        with open(zp, "w", encoding="utf-8") as f:
+            f.write(ZIP_MULTI_VAR)
+        r1 = run(L1, [zp])
+        r2 = run(L2, [zp])
+        check("L1/L2 Zip 多字符循环变量豁免：不误报",
+              bool(r1) and r1.get("ok") is True and not r1.get("warnings")
+              and bool(r2) and r2.get("semanticErrors") == 0,
+              json.dumps([r1, r2], ensure_ascii=False)[:300])
+
+        # ---------- 反三角长拼写别名（v1.5.0） ----------
+        it = os.path.join(tmp, "invtrig.txt")
+        with open(it, "w", encoding="utf-8") as f:
+            f.write(INVTRIG_CASES)
+        rep = run(L1, [it])
+        check("L1 反三角别名 arctan 不误报",
+              bool(rep) and rep.get("ok") is True and not rep.get("warnings"),
+              json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
+
+        # ---------- 引擎不支持命令（CAS 专属，v1.5.0） ----------
+        eu = os.path.join(tmp, "engine_unsupported.txt")
+        with open(eu, "w", encoding="utf-8") as f:
+            f.write(ENGINE_UNSUPPORTED_CASES)
+        rep = run(L1, [eu])
+        check("L1 引擎不支持命令：Eigenvalues/Eigenvectors → 2 条 engine-unsupported",
+              bool(rep) and len(rep.get("warnings", [])) == 2
+              and set(rules_of(rep.get("warnings", []))) == {"engine-unsupported"},
               json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
 
     print("\n----- 汇总 -----")
