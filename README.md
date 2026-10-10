@@ -149,7 +149,7 @@ auto-geogebra/
 │   ├── course-routing.md         # 29 个高校数学主题路由表（典型变化 + 核心变量 + 常用指令）
 │   ├── command-validation.md     # 指令静态验证检查清单
 │   ├── anti-patterns.md          # 常见失败与反例清单（引擎坑 / 验证坑 / 教学反例）
-│   ├── patterns.md               # 6 大教学创作模式库
+│   ├── patterns.md               # 教学创作模式库（v1.6 整合版：13 族 + 通用技法表）
 │   ├── interaction-patterns.md   # 按钮 / 动画 / 重置等交互增强模式
 │   └── workflow.md               # 教师创作工作流速查
 ├── scripts/

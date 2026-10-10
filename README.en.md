@@ -118,7 +118,7 @@ auto-geogebra/
 │   ├── course-routing.md         # 28 university-math topic routes
 │   ├── command-validation.md     # Static validation checklist
 │   ├── anti-patterns.md          # Common failures & anti-patterns (engine traps / validation traps / teaching anti-patterns)
-│   ├── patterns.md               # 6 teaching design patterns
+│   ├── patterns.md               # Teaching design patterns (v1.6: 13 families + generic techniques)
 │   ├── interaction-patterns.md   # Buttons / animation / reset patterns
 │   └── workflow.md               # Teacher workflow quick reference
 ├── scripts/                      # L1/L2 validators, smoke test, index builder
