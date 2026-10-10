@@ -3,7 +3,7 @@ name: auto-geogebra
 description: Use when 需要把高校数学教学创意转化为可运行的 GeoGebra 动态演示/课件/动画：设计交互变量与滑块、生成并验证 GeoGebra 指令、导出 .ggb 文件（覆盖《高等数学》《线性代数》《概率论与数理统计》与数学专业课程）。触发词：GeoGebra 演示、ggb 课件、动态演示制作、滑块与参数设计、指令校验、导数/积分/线性变换/概率模拟类演示等。不要用于非数学教学用途，也不替代教师自己的教学设计。
 metadata:
   author: 张敬信 (zhjx19)
-  version: "1.5.26"
+  version: "1.5.27"
   source: autos.skills.geogebra v0.3.1 (aardio Autos skill)
 license: Apache-2.0
 ---
@@ -291,6 +291,12 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 | 随机/分布/直方图 | `RandomDiscrete`, `Histogram`, `BarChart`, `BinomialDist`, `Poisson` |
 
 ## 更新记录
+
+### v1.5.27（2026-10-10 · 第二十八批实跑：6 类新主题）
+- **真机跑通 6 个新主题**：离散傅里叶变换（DFT）幅度谱、PageRank（幂迭代）、Cholesky 分解、MDP 值迭代、Arnold 猫映射、共形映射（上半平面 → 带形）。（作品不随技能分发。）
+- **本轮无新引擎坑**；正面确认：DFT 用**相关法**（`Sum` + `cos/sin`）直接画谱线；`ApplyMatrix(LT,poly)` 再 `ApplyMatrix(L,·)` 实现 Cholesky 两步映射；`Max` 大写命令驱动值迭代；`Mod` 大写命令实现模映射。
+- **模式扩充**：`patterns.md` 增 DFT 幅度谱、PageRank、Cholesky、MDP 值迭代、Arnold 猫映射、共形映射带形 6 个模式（4.155–4.160）。
+- test-prompts 59 → 61 例；冒烟仍 31 项全绿。
 
 ### v1.5.26（2026-10-10 · 第二十七批实跑：AR(1) 自相关 + 卷积 + 4 类补充主题）
 - **真机跑通 6 个新主题**（用户指定 AR(1) 自相关、卷积，另补 4 个）：AR(1) 过程的自相关、卷积（两矩形→三角）、三角波的傅里叶级数、生命游戏（二维元胞自动机）、随机游走与扩散（√n 律）、朴素贝叶斯决策边界。（作品不随技能分发。）
