@@ -155,6 +155,7 @@ auto-geogebra/
 ├── scripts/
 │   ├── validate_commands.py      # L1 语法验证器
 │   ├── validate_types.py         # L2 语义验证器
+│   ├── quickstart.py             # 一键自检 / 导出 demo（新手 3 分钟看到结果）
 │   ├── smoke_test.py             # 回归冒烟（31 项，改动验证器后必跑）
 │   └── build_index.py            # 指令索引重建工具（维护者）
 ├── data/
@@ -173,6 +174,7 @@ auto-geogebra/
 
 ```bash
 python scripts/smoke_test.py     # 期望：31 项全过（含好样例、埋错、编码边界与真机规则回归）
+python scripts/quickstart.py     # 一键：对自带示例跑 L1+L2 双验证（加 --export 真机导出 .ggb）
 ```
 
 CI：每次 push 自动在 **Windows / Ubuntu** 上跑冒烟与双验证（见仓库 Actions 页）；遇到报错或静默失败，先查 [references/anti-patterns.md](references/anti-patterns.md)。

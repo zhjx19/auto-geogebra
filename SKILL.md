@@ -3,7 +3,7 @@ name: auto-geogebra
 description: Use when 需要把高校数学教学创意转化为可运行的 GeoGebra 动态演示/课件/动画：设计交互变量与滑块、生成并验证 GeoGebra 指令、导出 .ggb 文件（覆盖《高等数学》《线性代数》《概率论与数理统计》与数学专业课程）。触发词：GeoGebra 演示、ggb 课件、动态演示制作、滑块与参数设计、指令校验、导数/积分/线性变换/概率模拟类演示等。不要用于非数学教学用途，也不替代教师自己的教学设计。
 metadata:
   author: 张敬信 (zhjx19)
-  version: "1.6.0"
+  version: "1.6.1"
   source: autos.skills.geogebra v0.3.1 (aardio Autos skill)
 license: Apache-2.0
 ---
@@ -265,6 +265,7 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 - `scripts/validate_commands.py` — **L1 语法验证器**：括号配对、SetColor 0-1 范围、Text 的 `\n`、Slider 参数、命令拼写、未定义变量，输出 JSON 报告。
 - `scripts/validate_types.py` — **L2 语义（类型）验证器**：用 `data/commands-index.json` 的类型签名检查参数类型、矩阵维度、数值列表；与 L1 组成「双验证」。
 - `scripts/smoke_test.py` — **回归冒烟测试**：好样例 ×3、埋错样例（9 类）、stdin/BOM/GBK 编码边界、命名规则、使用顺序、Zip 循环变量、反三角别名、引擎不支持命令、大写用户函数、点内积、样式命令、函数形参、Surface 参数共 **31 项**检查一键复跑；改动验证器后必须全绿（维护者用）。
+- `scripts/quickstart.py` — **一键自检 / 导出 demo**：`python scripts/quickstart.py`（对自带示例跑 L1+L2，离线）、`--list` 列示例、加 `--export [--png]` 再真机导出 .ggb（可选，需 Node+Chrome+联网）。仅标准库、跨平台、无破坏性操作（新手用）。
 - `scripts/build_index.py` — **指令索引重建工具**：从本机 GeoGebra manual（asciidoc）重建 `data/commands-index.json`，支持 `--compare` 与现有索引做字段级对照（维护者用）。
 - `tools/ggb-export/` — **真机导出工具**：零依赖 Node 脚本，调用官方引擎把指令导出为 .ggb 并逐条核验（用法见其 README）。
 - `tools/ggb-export/ggb_patch.py` — **按钮/脚本注入器**：把 GGBScript 注入导出的 .ggb（按钮脚本无法经命令注入，真机实测）。
@@ -294,6 +295,10 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 ## 更新记录
 
 > 完整版本历史（v1.0 → 至今）见 [CHANGELOG.md](CHANGELOG.md)。以下仅列**近期要点**。
+
+### v1.6.1（2026-10-10 · 新增一键 demo 脚本）
+- **新增 `scripts/quickstart.py`**（仅 Python 标准库、跨平台）：`python scripts/quickstart.py` 对自带示例跑 L1+L2 双验证（离线）；`--list` 列示例；加 `--export [--png]` 再真机导出 .ggb（可选，需 Node+Chrome+联网）。只读指令、只写 .ggb/.png，无破坏性操作。
+- README「快速开始 / 文件结构」与本节「辅助数据文件」同步。
 
 ### v1.6.0（2026-10-10 · 总审整合版）
 - **`patterns.md` 整合精简**：v1.5.x 累积的 166 条扁平模式按**数学主题族**重组为 13 族 + 1 张「通用绘图技法」表（每族：共用套路 + 成员表保留原编号/实测标号），文件从 ≈2100 行精简到 ≈500 行，**知识点与真机坑引用零丢失**。
