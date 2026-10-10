@@ -3,7 +3,7 @@ name: auto-geogebra
 description: Use when 需要把高校数学教学创意转化为可运行的 GeoGebra 动态演示/课件/动画：设计交互变量与滑块、生成并验证 GeoGebra 指令、导出 .ggb 文件（覆盖《高等数学》《线性代数》《概率论与数理统计》与数学专业课程）。触发词：GeoGebra 演示、ggb 课件、动态演示制作、滑块与参数设计、指令校验、导数/积分/线性变换/概率模拟类演示等。不要用于非数学教学用途，也不替代教师自己的教学设计。
 metadata:
   author: 张敬信 (zhjx19)
-  version: "1.5.17"
+  version: "1.5.18"
   source: autos.skills.geogebra v0.3.1 (aardio Autos skill)
 license: Apache-2.0
 ---
@@ -198,6 +198,7 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 - `Derivative(f, x)` 等中间函数会被**自动画出曲面**，用 `SetVisibleInView(fn, -1, false)` 隐藏；
 - `Sequence`/`Zip` 造的对象列表在 .ggb 里只存定义，核验用 `Length()` 而非数对象；
 - 变上限积分 Φ(x)=∫ₐˣf：`Integral(f, x)`（反导数）作函数求值为 **NaN**、变限 `Integral(f, a, x)` **不创建** → 用黎曼和 `Sum(f(a + (x - a) * i / n) * (x - a) / n, i, 1, n)`（注：定积分 `Integral(f, a, b)`（a,b 为数值）**可用**）；
+- **嵌套 `Sum` 失败**（`Sum(Sum(…, rr, …), tt, …)`，内层不含外层变量）→ 双重求和**可分离化**：内层单独定义 `inner = Sum(…)`，外层乘析出因子（如 `inner * 2*pi`），或改单层 `Sum`（真机实测 A30）；
 - 解曲线：`SolveODE(f, 点)` 返回**不可求值**的 function（不绘制）→ 用 `SolveODE(f, x0, y0, xEnd, step)`（可绘制）；
 - `(0,0) + 向量` 得**向量**、`Point(向量)` 失败 → 求垂足用 `ClosestPoint(<直线>, <点>)`；
 - 为计算而定义的**辅助函数会被自动绘制**（重复曲线/多余曲面）→ `SetVisibleInView(fn, 1, false)`（2D）/`(fn, -1, false)`（3D）隐藏；
@@ -286,6 +287,13 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 | 随机/分布/直方图 | `RandomDiscrete`, `Histogram`, `BarChart`, `BinomialDist`, `Poisson` |
 
 ## 更新记录
+
+### v1.5.18（2026-10-10 · 第十九批实跑：6 类新主题）
+- **真机跑通 6 个新主题**：斯托克斯公式（曲面任选）、欧拉公式 e^{iθ}（与泰勒级数一致）、贝塞尔函数 J_n(x)、二重积分·极坐标累次、结点相图、傅里叶级数逼近锯齿波（Gibbs）。（作品不随技能分发。）
+- **真机实测新坑沉淀**（`references/anti-patterns.md` A30）：**嵌套 `Sum`（`Sum(Sum(…))`）执行失败** → 双重求和可分离化（内层单独定义、外层乘析出因子）。
+- **正面确认（含 3D）**：`Surface(u,v,…)` 参数式上半球面 + 边界 `Curve`（斯托克斯）；`(2m)!` / `k!` 阶乘与 `Sum` 上界为滑块可作 cos/sin 级数、贝塞尔级数；`Circle((0,0),R)` + `Sequence(Segment)`/`Sequence(Circle)` 搭极坐标网格；`SolveODE(y',x',…)` 画结点/鞍点；傅里叶部分和 `Sum` 逼近锯齿波。
+- **模式扩充**：`patterns.md` 增斯托克斯、欧拉公式、贝塞尔函数、极坐标累次、结点相图、傅里叶锯齿波 6 个模式（4.101–4.106）。
+- test-prompts 41 → 43 例；冒烟仍 30 项全绿。
 
 ### v1.5.17（2026-10-10 · 第十八批实跑：6 类新主题）
 - **真机跑通 6 个新主题**：约当块（不可对角化）、拉格朗日余项（泰勒误差界）、勒让德多项式正交性、共形映射（单位圆 → 上半平面）、稳定焦点相图、维数公式（子空间交与和）。（作品不随技能分发。）
