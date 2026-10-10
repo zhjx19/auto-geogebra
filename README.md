@@ -144,7 +144,7 @@ npx skills add zhjx19/auto-geogebra
 ```text
 auto-geogebra/
 ├── SKILL.md                      # 主工作流：需求澄清 → 变量设计 → 实现 → 双验证 → 导出
-├── test-prompts.json             # 31 个真实测试场景（含预期行为）
+├── test-prompts.json             # 33 个真实测试场景（含预期行为）
 ├── references/
 │   ├── course-routing.md         # 29 个高校数学主题路由表（典型变化 + 核心变量 + 常用指令）
 │   ├── command-validation.md     # 指令静态验证检查清单
