@@ -3,7 +3,7 @@ name: auto-geogebra
 description: Use when 需要把高校数学教学创意转化为可运行的 GeoGebra 动态演示/课件/动画：设计交互变量与滑块、生成并验证 GeoGebra 指令、导出 .ggb 文件（覆盖《高等数学》《线性代数》《概率论与数理统计》与数学专业课程）。触发词：GeoGebra 演示、ggb 课件、动态演示制作、滑块与参数设计、指令校验、导数/积分/线性变换/概率模拟类演示等。不要用于非数学教学用途，也不替代教师自己的教学设计。
 metadata:
   author: 张敬信 (zhjx19)
-  version: "1.5.27"
+  version: "1.5.28"
   source: autos.skills.geogebra v0.3.1 (aardio Autos skill)
 license: Apache-2.0
 ---
@@ -291,6 +291,14 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 | 随机/分布/直方图 | `RandomDiscrete`, `Histogram`, `BarChart`, `BinomialDist`, `Poisson` |
 
 ## 更新记录
+
+### v1.5.28（2026-10-10 · 第二十九批实跑：用户指定 6 主题）
+- **真机跑通 6 个新主题**（用户指定）：LU 分解、Logistic 映射的倍周期分岔、拉普拉斯变换、Lorenz 系统的平衡点、伊藤引理（½σ² 校正）、z 变换。（作品不随技能分发。）
+- **A1 再现一次**：拉普拉斯变换动点 `mL178` 小写名 + 坐标被当作**向量** → 改大写。
+- **B15 补充一条**：3D 预览 T3 默认视野约 ±7，关键对象远离原点会看不到（Lorenz 平衡点在 ρ=28 时约 (8,8,27)）→ 演示默认取小 ρ（如 4）让平衡点入镜。
+- **正面确认**：`ApplyMatrix(U,sq)` 再 `ApplyMatrix(L,·)` 实现 LU 两步映射；Logistic 周期 2 用**解析分支**（限定 r ≥ 3 的 `Curve`）呈现倍周期起点；拉普拉斯/伊藤用「曲线下移 + 期望 vs 中位数」讲清 s 域与 ½σ²。
+- **模式扩充**：`patterns.md` 增 LU 分解、Logistic 倍周期、拉普拉斯变换、Lorenz 平衡点、伊藤引理、z 变换 6 个模式（4.161–4.166）。
+- test-prompts 61 → 63 例；冒烟仍 31 项全绿。
 
 ### v1.5.27（2026-10-10 · 第二十八批实跑：6 类新主题）
 - **真机跑通 6 个新主题**：离散傅里叶变换（DFT）幅度谱、PageRank（幂迭代）、Cholesky 分解、MDP 值迭代、Arnold 猫映射、共形映射（上半平面 → 带形）。（作品不随技能分发。）
