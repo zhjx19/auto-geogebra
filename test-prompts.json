@@ -143,5 +143,15 @@
     "id": 29,
     "prompt": "演示样本均值的抽样分布：重复抽很多次，把样本均值画出来，看它随样本量增大越来越集中。",
     "expected": "第零层澄清（分布、n、m 范围）→ 指令：`means = Sequence(Mean(Sequence(RandomNormal(0,1), j, 1, n)), i, 1, m)`；rug 图 `Sequence(Segment((Element(means,i),0),(Element(means,i),h)), i, 1, m)`；文本对比经验 SD 与 `σ/√n`；重抽样用 tick 变量；`n`、`m` 作滑块。→ 双验证 → 真机导出。"
+  },
+  {
+    "id": 30,
+    "prompt": "演示阻尼振动的三种情形：欠阻尼振荡、临界阻尼、过阻尼。",
+    "expected": "第零层澄清（ω、ζ 范围）→ 指令：二阶线性 ODE 用 `SolveODE(b, c, f, x0, y0, y0', xEnd, step)`（y″+b·y′+c·y=f，返回 locus）；`b=2ζω`、`c=ω²`；ζ 作滑块；另画 ζ=0.2/1/2 三条参考曲线；观察 ζ<1 振荡、=1 临界、>1 过阻尼。→ 双验证 → 真机导出。"
+  },
+  {
+    "id": 31,
+    "prompt": "演示捕食者—被捕食者模型的相平面：不同初值的解曲线都是围绕平衡点的闭轨。",
+    "expected": "第零层澄清（方程参数、初值范围）→ 指令：两个函数 `prey(x,y)`、`pred(x,y)`；轨道 `SolveODE(pred, prey, x0, y0, tEnd, step)`（**参数顺序 y′, x′**，返回 locus）；多条不同初值轨道 + 平衡点点。→ 双验证 → 真机导出。"
   }
 ]
