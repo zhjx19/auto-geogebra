@@ -223,5 +223,15 @@
     "id": 45,
     "prompt": "演示空间曲线的曲率与挠率。",
     "expected": "第零层澄清（曲线、参数）→ 指令：螺旋线 `Curve(a*cos t, a*sin t, b*t, …)`；解析 `k=a/(a^2+b^2)`、`tau=b/(a^2+b^2)`；用 `Vector` 画 T、N 箭头（**3D 不要用 OsculatingCircle，会失败，A31**），`SetCaption`+`ShowLabel(…,true)`（A29）。→ 双验证 → 真机导出。"
+  },
+  {
+    "id": 46,
+    "prompt": "演示蒙特卡洛方法估计圆周率：随机投点，落在四分之一圆内的比例乘以 4。",
+    "expected": "第零层澄清（点数 N）→ 指令：`pts = Sequence((Random(), Random()), i, 1, N)`；入区判定 `Sequence(If(x(Element(pts,i))^2+y(Element(pts,i))^2 <= 1, 1, 0), i, 1, N)`；`Sum(Element(inside,i), i, 1, N)` 计数；估计 4·cnt/N；`Curve` 画四分之一圆、`Polygon` 画正方形。→ 双验证 → 真机导出。"
+  },
+  {
+    "id": 47,
+    "prompt": "演示马尔可夫链的平稳分布：两状态链的占比随步数收敛到定值。",
+    "expected": "第零层澄清（转移概率 a、b）→ 指令：占比递推 `p(k+1) = p(k)(1-a-b) + b`，**手写前几步**（避开迭代命令 A23）；`Polyline((0,q0),…)` 画轨迹；平稳值 `b/(a+b)` 用虚线 `Line`；a、b 滑块。→ 双验证 → 真机导出。"
   }
 ]
