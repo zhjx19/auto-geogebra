@@ -33,6 +33,7 @@
 | A24 ⚙️ | `cnt(k) = CountIf(边界(k) ≤ mm < 边界(k+1), mm, 列表)` 失败 | `CountIf` 的条件里含**参数相关的边界/用户函数**（两个绑定变量 `k`、`mm` 嵌套）时失败；单纯字面边界的 `CountIf` 正常 | 边界尽量**内联**为简单表达式；直方图分箱若卡住，改用 `Sequence`+`Zip` 或手工搭（真机实测） |
 | A25 ⚙️ | 字面量点列表 `{(x,y), …}` 定义后，图上的数据点**看不见** | 该引擎把**字面量列表**创建为**隐藏**（`show object="false"`）；`Sequence` 生成的列表、`Append` 的结果则可见 | 对字面量点列表加 `SetVisibleInView(列表, 1, true)`（或改用 `Sequence`/`Append` 生成）（真机实测，T40/T34/T43） |
 | A26 ⚙️ | `Rank(<矩阵>)` 执行失败 | 该命令在本引擎不可用 | 判断线性相关用 `Determinant`（2×2：det=0 ⟺ 共线）；更高维可参考 `ReducedRowEchelonForm`（真机实测） |
+| A27 ⚙️ | `ln = a*x + b*y = c`（把**方程本身**当对象）执行失败 | 经命令注入时，**方程形式的对象定义**（含 `=`）不受支持 | 直线用 `Line(点, 点)` / `Line(点, 向量)`；由方程 `a*x + b*y − c = 0` 可用 `ImplicitCurve(a*x + b*y - c)`（真机实测，probeL） |
 
 ## B. 验证行为坑
 

@@ -3,7 +3,7 @@ name: auto-geogebra
 description: Use when 需要把高校数学教学创意转化为可运行的 GeoGebra 动态演示/课件/动画：设计交互变量与滑块、生成并验证 GeoGebra 指令、导出 .ggb 文件（覆盖《高等数学》《线性代数》《概率论与数理统计》与数学专业课程）。触发词：GeoGebra 演示、ggb 课件、动态演示制作、滑块与参数设计、指令校验、导数/积分/线性变换/概率模拟类演示等。不要用于非数学教学用途，也不替代教师自己的教学设计。
 metadata:
   author: 张敬信 (zhjx19)
-  version: "1.5.8"
+  version: "1.5.9"
   source: autos.skills.geogebra v0.3.1 (aardio Autos skill)
 license: Apache-2.0
 ---
@@ -206,7 +206,8 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 - `BarChart(…)` / `Histogram(…)` **不产出图形**（都返回数值）→ 柱状/直方用 `Sequence(Segment((k,0),(k,v)), k, …)`，折线用 `Polyline(...)`；
 - `Iteration` / `IterationList` **不可用** → 迭代类（牛顿法、Euler 法）**手写前几步** `x1 = x0 − f(x0)/f′(x0)` …；
 - 插值多项式用 `Polynomial(<点列表>)`（**可用**）；`CountIf` 的**条件里别放用户函数**，边界尽量内联；
-- 字面量点列表 `{(x,y), …}` 默认**隐藏**（数据点看不见）→ `SetVisibleInView(列表, 1, true)`；`Rank` **不可用**，判线性相关用 `Determinant`。
+- 字面量点列表 `{(x,y), …}` 默认**隐藏**（数据点看不见）→ `SetVisibleInView(列表, 1, true)`；`Rank` **不可用**，判线性相关用 `Determinant`；
+- 方程 `a*x + b*y = c` 作对象**失败** → 直线用 `Line(点, 点)` 或 `ImplicitCurve(a*x + b*y - c)`。
 
 ## 输出给教师的推荐格式
 
@@ -283,6 +284,13 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 | 随机/分布/直方图 | `RandomDiscrete`, `Histogram`, `BarChart`, `BinomialDist`, `Poisson` |
 
 ## 更新记录
+
+### v1.5.9（2026-10-10 · 第十批实跑：6 类新主题）
+- **真机跑通 6 个新主题**：极坐标玫瑰线、平面方程与法向量（3D）、二次曲面截痕（3D）、卡方分布、单调有界数列收敛、线性方程组的几何形态。（作品不随技能分发。）
+- **真机实测新坑**（`references/anti-patterns.md` A27）：方程 `a*x + b*y = c` 作对象失败 → 直线用 `Line(点,点)` 或 `ImplicitCurve(a*x+b*y-c)`。
+- **正面确认（含 3D）**：`Curve(r·cos, r·sin, …)` 极坐标曲线、`Plane(三点)`、`IntersectPath(平面, 球面)`（→ 交线圆）、`ChiSquared(k, x, false)` 密度、`Vector(3D)` 均可用。
+- **模式扩充**：`patterns.md` 增极坐标曲线、平面方程与法向量、二次曲面截痕、卡方/F 分布、单调有界数列、线性方程组几何形态 6 个模式。
+- test-prompts 23 → 25 例；冒烟仍 29 项全绿。
 
 ### v1.5.8（2026-10-10 · 第九批实跑：6 类新主题）
 - **真机跑通 6 个新主题**：极值判别法、隐函数求导（圆的切线）、反函数与镜像、双曲函数与单位双曲线、数列极限的 ε–N 语言、平面图与欧拉公式。（作品不随技能分发。）
