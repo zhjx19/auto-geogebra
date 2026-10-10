@@ -496,6 +496,17 @@ def validate_commands(text):
                 "text": line,
             })
 
+        # 6.6 小写命令提醒（真机实测，A32）：Max/Min 是首字母大写的命令，小写 max()/min() 不被识别
+        _line_ns = re.sub(r'"(?:[^"\\]|\\.)*"', "", line)
+        _mc = re.search(r"(?<![\w.])(max|min)\s*\(", _line_ns)
+        if _mc:
+            _lc = _mc.group(1)
+            result["warnings"].append({
+                "line": i, "severity": "warning", "rule": "lowercase-command",
+                "message": f"小写 '{_lc}(...)' 不被引擎识别，请改用 '{_lc.capitalize()}(...)'（真机实测，A32）",
+                "text": line,
+            })
+
         # 7. 未定义变量引用检查（对含命令调用的行同样生效）
         #    先剥离字符串与 LaTeX 记号再扫描标识符；已知命令名、内置常量、
         #    迭代型命令行上的单字母循环变量、本行定义均豁免。

@@ -201,6 +201,13 @@ SURF_PARAM_CASES = r"""# Surface 参数变量豁免（v1.5.14）
 sfX = Surface(u, v, u^2 - v^2, u, -1, 1, v, -1, 1)
 """
 
+LOWERCASE_CMD_CASES = r"""# 小写命令提醒：Max/Min 才是命令，小写 max()/min() 不被识别（v1.5.21）
+a = 5
+b = 3
+m1 = max(a, b)
+m2 = min(a, b)
+"""
+
 CHECKS = 0
 FAILURES = []
 
@@ -481,6 +488,17 @@ def main():
         rep = run(L1, [sp])
         check("L1 Surface 参数变量（u, v）不误报未定义",
               bool(rep) and rep.get("ok") is True and not rep.get("warnings"),
+              json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
+
+        # ---------- 小写命令提醒（v1.5.21，A32） ----------
+        lc = os.path.join(tmp, "lowercase_cmd.txt")
+        with open(lc, "w", encoding="utf-8") as f:
+            f.write(LOWERCASE_CMD_CASES)
+        rep = run(L1, [lc])
+        check("L1 小写命令提醒：max/min → 2 条 lowercase-command",
+              bool(rep) and rep.get("ok") is True
+              and len(rep.get("warnings", [])) == 2
+              and rules_of(rep.get("warnings", [])) == ["lowercase-command"],
               json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
 
     print("\n----- 汇总 -----")

@@ -38,6 +38,7 @@
 | A29 ⚙️ | `SetCaption(Vec, "T")` 设了标题，图形区仍不显示标签 | `SetCaption` 只把对象 `labelMode` 置为 caption（`val=3`），但该对象 `show label` 仍为 `false` | 追加 `ShowLabel(对象, true)` 才会显示 caption（真机实测，T107） |
 | A30 ⚙️ | 嵌套求和 `Sum(Sum(expr, rr, 1, 60), tt, 1, 90)` 执行失败（各项单独都合法） | 本引擎对**嵌套 `Sum`**（内层不含外层变量）支持不佳 | 把双重求和**可分离化**：内层单独定义 `inner = Sum(...)`，外层用析出因子替代（如 `inner * 2*pi`），或改用单层 `Sum`（真机实测，T119） |
 | A31 ⚙️ | `OsculatingCircle(<点>, <3D 曲线>)` 执行失败（二维曲线上可用，见 T30 曲率圆） | 密切圆命令**不支持空间曲线** | 3D 曲线的曲率/挠率改用**解析式** + `Vector(...)` 画 T、N 箭头 + 动态文本给 κ、τ（真机实测，T124） |
+| A32 ⚙️ | `m = max(a, b)` / `min(...)` 表达式失败（各项均合法，L1 也不报"未知命令"） | GeoGebra 的 `Max`/`Min` 是**首字母大写的命令**，小写 `max()`/`min()` 不被识别 | 改用 `Max(a, b)` / `Min(a, b)`；L1 已加静态提醒 `lowercase-command`（真机实测，T135） |
 
 ## B. 验证行为坑
 
