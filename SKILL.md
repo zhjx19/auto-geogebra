@@ -3,7 +3,7 @@ name: auto-geogebra
 description: Use when 需要把高校数学教学创意转化为可运行的 GeoGebra 动态演示/课件/动画：设计交互变量与滑块、生成并验证 GeoGebra 指令、导出 .ggb 文件（覆盖《高等数学》《线性代数》《概率论与数理统计》与数学专业课程）。触发词：GeoGebra 演示、ggb 课件、动态演示制作、滑块与参数设计、指令校验、导数/积分/线性变换/概率模拟类演示等。不要用于非数学教学用途，也不替代教师自己的教学设计。
 metadata:
   author: 张敬信 (zhjx19)
-  version: "1.5.2"
+  version: "1.5.3"
   source: autos.skills.geogebra v0.3.1 (aardio Autos skill)
 license: Apache-2.0
 ---
@@ -203,7 +203,7 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 - 为计算而定义的**辅助函数会被自动绘制**（重复曲线/多余曲面）→ `SetVisibleInView(fn, 1, false)`（2D）/`(fn, -1, false)`（3D）隐藏；
 - 分布命令：`BinomialDist(n,p,k)`/`Poisson(λ,k)` **不可用**、`Normal(μ,σ,x)` 是**累积** → 密度用 `Normal(μ,σ,x,false)`，离散 pmf **显式算**（`BinomialCoefficient(n,k)*p^k*(1−p)^(n−k)`、`λ^k*exp(−λ)/k!`）；
 - 复数必须用**字面量** `a + b*i`；坐标对 `(x,y)` 的 `^2` 是**内积**（z² 映射用 `(x²−y², 2xy)`）；
-- `BarChart(起点, 终点, 高度列表)` **不可靠** → 柱状用 `Sequence(Segment((k,0),(k,v)), k, …)`，折线用 `Polyline(...)`。
+- `BarChart(…)` / `Histogram(…)` **不产出图形**（都返回数值）→ 柱状/直方用 `Sequence(Segment((k,0),(k,v)), k, …)`，折线用 `Polyline(...)`。
 
 ## 输出给教师的推荐格式
 
@@ -280,6 +280,12 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 | 随机/分布/直方图 | `RandomDiscrete`, `Histogram`, `BarChart`, `BinomialDist`, `Poisson` |
 
 ## 更新记录
+
+### v1.5.3（2026-10-10 · 第四批实跑：6 类新主题）
+- **真机跑通 6 个新主题**：ε-δ 极限邻域、导函数与二阶导联动（凹凸/拐点）、二次型等值线与主轴、奇异矩阵压扁平面、曲率圆与曲率半径、异常值对回归线影响。（作品不随技能分发。）
+- **真机实测新坑**（`references/anti-patterns.md` A22）：`Histogram(...)` 同 `BarChart` 一样**不产出图形**（返回数值）→ 直方图/柱状一律手工搭 `Sequence(Segment(...))`。
+- **模式扩充**：`patterns.md` 增极限邻域（ε-δ）、曲线性态联动、二次型与主轴、曲率圆、回归稳健性 5 个模式。
+- 本轮验证器无误报需修（L1 正确抓出 `inf27` 小写坐标名会成向量）；冒烟仍 29 项全绿。
 
 ### v1.5.2（2026-10-10 · 第三批实跑：6 类新主题）
 - **真机跑通 6 个新主题**：复函数 z² 网格变换、拉格朗日乘数法、泊松分布作为二项极限、矩阵乘法复合、一类/二类错误、极坐标面积微元 r·dr·dθ。（作品不随技能分发。）
