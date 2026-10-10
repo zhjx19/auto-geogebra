@@ -100,6 +100,8 @@ BUILTIN_FUNCTIONS = {
     "real", "imaginary", "conjugate", "arg", "deg", "rad",
     # 特殊函数
     "gamma", "beta", "erf", "erfc",
+    # 组合数（真机实测可用，索引未单列）
+    "BinomialCoefficient", "nCr", "nPr",
     # 既可作为函数也可作为命令的关键字
     "min", "max", "mod", "gcd", "lcm", "if",
 }
@@ -502,6 +504,9 @@ def validate_commands(text):
         # （如 polyN = Polygon(Sequence(..., k, ...))）
         allow_single_letter = cmd_name in ITERATOR_CMDS or any(_it in line for _it in ITERATOR_CMDS)
         iter_vars = iter_bound_vars(line)
+        # 函数定义 `Name(参数…) = …`：参数变量在本行内是"已定义"的（真机实测，v1.5.2）
+        _m_fd = re.match(r"^[A-Za-z_]\w*\s*\(([^)]*)\)\s*[:=]", line)
+        fd_params = set(re.findall(r"[A-Za-z]\w*", _m_fd.group(1))) if _m_fd else set()
         for var_name in re.findall(r"[A-Za-z][\w]*", stripped_line):
             if var_name in BUILTIN_WORDS:
                 continue
@@ -515,6 +520,8 @@ def validate_commands(text):
                 continue
             if var_name in iter_vars:
                 continue  # 迭代命令绑定的循环变量（含多字符名，如 Zip 的 mm）
+            if var_name in fd_params:
+                continue  # 本行函数定义的形参（如 bpC(k) = … 中的 k）
             if var_name in defined_vars:
                 if defined_vars[var_name] > i:
                     result["warnings"].append({

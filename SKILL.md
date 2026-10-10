@@ -3,7 +3,7 @@ name: auto-geogebra
 description: Use when 需要把高校数学教学创意转化为可运行的 GeoGebra 动态演示/课件/动画：设计交互变量与滑块、生成并验证 GeoGebra 指令、导出 .ggb 文件（覆盖《高等数学》《线性代数》《概率论与数理统计》与数学专业课程）。触发词：GeoGebra 演示、ggb 课件、动态演示制作、滑块与参数设计、指令校验、导数/积分/线性变换/概率模拟类演示等。不要用于非数学教学用途，也不替代教师自己的教学设计。
 metadata:
   author: 张敬信 (zhjx19)
-  version: "1.5.1"
+  version: "1.5.2"
   source: autos.skills.geogebra v0.3.1 (aardio Autos skill)
 license: Apache-2.0
 ---
@@ -200,7 +200,10 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 - 变上限积分 Φ(x)=∫ₐˣf：`Integral(f, x)`（反导数）作函数求值为 **NaN**、变限 `Integral(f, a, x)` **不创建** → 用黎曼和 `Sum(f(a + (x - a) * i / n) * (x - a) / n, i, 1, n)`；
 - 解曲线：`SolveODE(f, 点)` 返回**不可求值**的 function（不绘制）→ 用 `SolveODE(f, x0, y0, xEnd, step)`（可绘制）；
 - `(0,0) + 向量` 得**向量**、`Point(向量)` 失败 → 求垂足用 `ClosestPoint(<直线>, <点>)`；
-- 为计算而定义的**辅助函数会被自动绘制**（重复曲线/多余曲面）→ `SetVisibleInView(fn, 1, false)`（2D）/`(fn, -1, false)`（3D）隐藏。
+- 为计算而定义的**辅助函数会被自动绘制**（重复曲线/多余曲面）→ `SetVisibleInView(fn, 1, false)`（2D）/`(fn, -1, false)`（3D）隐藏；
+- 分布命令：`BinomialDist(n,p,k)`/`Poisson(λ,k)` **不可用**、`Normal(μ,σ,x)` 是**累积** → 密度用 `Normal(μ,σ,x,false)`，离散 pmf **显式算**（`BinomialCoefficient(n,k)*p^k*(1−p)^(n−k)`、`λ^k*exp(−λ)/k!`）；
+- 复数必须用**字面量** `a + b*i`；坐标对 `(x,y)` 的 `^2` 是**内积**（z² 映射用 `(x²−y², 2xy)`）；
+- `BarChart(起点, 终点, 高度列表)` **不可靠** → 柱状用 `Sequence(Segment((k,0),(k,v)), k, …)`，折线用 `Polyline(...)`。
 
 ## 输出给教师的推荐格式
 
@@ -250,7 +253,7 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 
 - `scripts/validate_commands.py` — **L1 语法验证器**：括号配对、SetColor 0-1 范围、Text 的 `\n`、Slider 参数、命令拼写、未定义变量，输出 JSON 报告。
 - `scripts/validate_types.py` — **L2 语义（类型）验证器**：用 `data/commands-index.json` 的类型签名检查参数类型、矩阵维度、数值列表；与 L1 组成「双验证」。
-- `scripts/smoke_test.py` — **回归冒烟测试**：好样例 ×3、埋错样例（9 类）、stdin/BOM/GBK 编码边界、命名规则、使用顺序、Zip 循环变量豁免、反三角别名、引擎不支持命令、大写用户函数、点内积、样式命令共 **28 项**检查一键复跑；改动验证器后必须全绿（维护者用）。
+- `scripts/smoke_test.py` — **回归冒烟测试**：好样例 ×3、埋错样例（9 类）、stdin/BOM/GBK 编码边界、命名规则、使用顺序、Zip 循环变量、反三角别名、引擎不支持命令、大写用户函数、点内积、样式命令、函数形参共 **29 项**检查一键复跑；改动验证器后必须全绿（维护者用）。
 - `scripts/build_index.py` — **指令索引重建工具**：从本机 GeoGebra manual（asciidoc）重建 `data/commands-index.json`，支持 `--compare` 与现有索引做字段级对照（维护者用）。
 - `tools/ggb-export/` — **真机导出工具**：零依赖 Node 脚本，调用官方引擎把指令导出为 .ggb 并逐条核验（用法见其 README）。
 - `tools/ggb-export/ggb_patch.py` — **按钮/脚本注入器**：把 GGBScript 注入导出的 .ggb（按钮脚本无法经命令注入，真机实测）。
@@ -277,6 +280,16 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 | 随机/分布/直方图 | `RandomDiscrete`, `Histogram`, `BarChart`, `BinomialDist`, `Poisson` |
 
 ## 更新记录
+
+### v1.5.2（2026-10-10 · 第三批实跑：6 类新主题）
+- **真机跑通 6 个新主题**：复函数 z² 网格变换、拉格朗日乘数法、泊松分布作为二项极限、矩阵乘法复合、一类/二类错误、极坐标面积微元 r·dr·dθ。（作品不随技能分发。）
+- **真机实测新坑沉淀**（`references/anti-patterns.md` A19–A21）：
+  - `BinomialDist(n,p,k)` / `Poisson(λ,k)` 不可用；`Normal(μ,σ,x)` 返回**累积** → 密度用 4 参、离散 pmf 显式算；
+  - 复数必须用**字面量** `a+b*i`；坐标对 `(x,y)` 的 `^2` 是**点积**；
+  - `BarChart(起点,终点,高度列表)` 返回数值 → 柱改用 `Sequence(Segment(...))`、折线用 `Polyline`。
+- **修复两类验证器误报**（B9–B10）：函数**形参**（`gg(k)=…`）误当未定义；`BinomialCoefficient`/`nCr` 不在内置函数表。
+- **模式扩充**：`patterns.md` 增复变映射、离散分布与逼近、约束极值、假设检验两类错误 4 个模式。
+- **回归套件扩至 29 项**（新增函数形参 + 组合数用例）。
 
 ### v1.5.1（2026-10-10 · 第二批实跑：6 类新主题）
 - **真机跑通 6 个新主题**：变上限积分函数、正交投影到直线、贝叶斯面积模型、拒绝域与 p 值、Logistic 方程、Fourier 逼近方波与 Gibbs 现象；并**修正方向场写法**（二参 `SolveODE` 不绘制 → 用数值式）。（作品不随技能分发。）

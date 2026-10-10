@@ -27,7 +27,7 @@
   {
     "id": 6,
     "prompt": "做一个展示「方向导数是梯度方向投影」的演示：三维曲面上的点，让方向向量绕一圈，看方向导数何时最大。",
-    "expected": "第零层澄清（曲面函数/基点位置/方向向量范围）→ 三层工作流 → 指令（f(x,y) 曲面 + 基点 + Derivative(f,x)/Derivative(f,y) 求偏导 + 方向向量 Vector + 方向导数文本）；注意：偏导中间函数须 SetVisibleInView(fn,-1,false) 隐藏（否则自动画出多余曲面，anti-patterns A12）；给出"对准梯度方向"按钮思路（atan2 求角）→ 双验证 → 真机导出（3D）。"
+    "expected": "第零层澄清（曲面函数/基点位置/方向向量范围）→ 三层工作流 → 指令（f(x,y) 曲面 + 基点 + Derivative(f,x)/Derivative(f,y) 求偏导 + 方向向量 Vector + 方向导数文本）；注意：偏导中间函数须 SetVisibleInView(fn,-1,false) 隐藏（否则自动画出多余曲面，anti-patterns A12）；给出「对准梯度方向」按钮思路（atan2 求角）→ 双验证 → 真机导出（3D）。"
   },
   {
     "id": 7,
@@ -43,5 +43,15 @@
     "id": 9,
     "prompt": "演示 Logistic 方程 y'=y(1−y)：画出方向场和几条解曲线，看解收敛到平衡点。",
     "expected": "第零层澄清（参数 r、K、初值范围）→ 指令：`SlopeField(f,n)` 方向场；解曲线用**数值式** `SolveODE(f, 0, y0, xEnd, step)`（返回可绘制 locus；二参 `SolveODE(f,点)` 返回不可求值 function 不绘制，anti-patterns A15），曲线族用 `Sequence(SolveODE(f,0,0.2*i,6,0.05),i,1,7)`；平衡线 y=0、y=K 用 `Line`；`ZoomIn` 定视图 → 双验证 → 真机导出。"
+  },
+  {
+    "id": 10,
+    "prompt": "做一个复变函数的演示：复映射 w=z² 把直角坐标网格变成什么样？",
+    "expected": "第零层澄清（z² 还是别的复映射、网格范围）→ 指令：原网格用 `Line`；像用 `Curve` 参数化——竖直线 x=k 的像是 `Curve(k^2−t^2, 2*k*t, t, −a, a)`，水平线 y=k 的像是 `Curve(t^2−k^2, 2*k*t, t, −a, a)`，整族 `Sequence(...)`。**注意**：复数须用字面量 `a+b*i`，坐标对 `(x,y)` 的 `^2` 是点积不是复平方（anti-patterns A20）。原网格线用深色粗线。→ 双验证 → 真机导出。"
+  },
+  {
+    "id": 11,
+    "prompt": "演示二项分布 B(n,p) 在 n 大、p 小时逼近泊松分布 Poisson(λ)。",
+    "expected": "第零层澄清（λ 范围、n 上限）→ 指令：pmf **显式算**（`BinomialCoefficient(n,k)*p^k*(1−p)^(n−k)`、`λ^k*exp(−λ)/k!`；不要用 `BinomialDist(n,p,k)`/`Poisson(λ,k)`，本引擎不可用，anti-patterns A19）；柱用 `Sequence(Segment((k,0),(k,bp(k))),k,0,n)`，泊松折线用 `Polyline(Sequence((k,pois(k)),k,0,m))`；λ、n 双滑块，`p=λ/n`；`ZoomIn` 定视图 → 双验证 → 真机导出。"
   }
 ]

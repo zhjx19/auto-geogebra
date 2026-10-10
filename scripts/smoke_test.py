@@ -191,6 +191,12 @@ SetLineStyle(fnS, 1)
 SetLineThickness(fnS, 3)
 """
 
+FN_PARAM_CASES = r"""# 函数形参豁免 + 组合数（v1.5.2）
+gg(k) = k^2 + 1
+hh(m, n) = m * n + 1
+bc(k) = BinomialCoefficient(5, k) * k
+"""
+
 CHECKS = 0
 FAILURES = []
 
@@ -453,6 +459,15 @@ def main():
         rep = run(L2, [sc])
         check("L2 样式命令（SetLineStyle 等）对函数不误报",
               bool(rep) and rep.get("semanticErrors") == 0,
+              json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
+
+        # ---------- 函数形参豁免（v1.5.2） ----------
+        fp = os.path.join(tmp, "fn_param.txt")
+        with open(fp, "w", encoding="utf-8") as f:
+            f.write(FN_PARAM_CASES)
+        rep = run(L1, [fp])
+        check("L1 函数形参（非内置名）不误报未定义",
+              bool(rep) and rep.get("ok") is True and not rep.get("warnings"),
               json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
 
     print("\n----- 汇总 -----")

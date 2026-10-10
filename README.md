@@ -9,7 +9,7 @@
 [![Agent Skills](https://img.shields.io/badge/Agent%20Skills-auto--geogebra-blueviolet)](SKILL.md)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![CI](https://github.com/zhjx19/auto-geogebra/actions/workflows/smoke.yml/badge.svg)](https://github.com/zhjx19/auto-geogebra/actions/workflows/smoke.yml)
-[![smoke](https://img.shields.io/badge/smoke-28%20checks%20%2F%200%20FAIL-brightgreen)](scripts/smoke_test.py)
+[![smoke](https://img.shields.io/badge/smoke-29%20checks%20%2F%200%20FAIL-brightgreen)](scripts/smoke_test.py)
 [![skills.sh](https://skills.sh/b/zhjx19/auto-geogebra)](https://skills.sh/zhjx19/auto-geogebra)
 
 **把高校数学教学创意变成可运行、可编辑、可验证的 GeoGebra 动态演示：需求澄清 → 变量设计 → 指令生成 → 双验证 → 真机导出 .ggb。**
@@ -144,7 +144,7 @@ npx skills add zhjx19/auto-geogebra
 ```text
 auto-geogebra/
 ├── SKILL.md                      # 主工作流：需求澄清 → 变量设计 → 实现 → 双验证 → 导出
-├── test-prompts.json             # 9 个真实测试场景（含预期行为）
+├── test-prompts.json             # 11 个真实测试场景（含预期行为）
 ├── references/
 │   ├── course-routing.md         # 29 个高校数学主题路由表（典型变化 + 核心变量 + 常用指令）
 │   ├── command-validation.md     # 指令静态验证检查清单
@@ -172,7 +172,7 @@ auto-geogebra/
 ## 验证与测试
 
 ```bash
-python scripts/smoke_test.py     # 期望：28 项全过（含好样例、埋错、编码边界与真机规则回归）
+python scripts/smoke_test.py     # 期望：29 项全过（含好样例、埋错、编码边界与真机规则回归）
 ```
 
 CI：每次 push 自动在 **Windows / Ubuntu** 上跑冒烟与双验证（见仓库 Actions 页）；遇到报错或静默失败，先查 [references/anti-patterns.md](references/anti-patterns.md)。

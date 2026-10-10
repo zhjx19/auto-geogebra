@@ -205,6 +205,54 @@
 
 常用命令：`Integral`, `Sum`, `Curve`, `Segment`, `Point`, `Text`, `Slider`, `InputBox`。
 
+### 4.11 复变映射模式
+
+适用：复函数 z²、Möbius 变换、保角映射、网格变换。
+
+设计套路：
+
+- **复数用字面量 `a + b*i`**（点是坐标，不是复数；坐标对的 `^2` 是内积）——见 [anti-patterns.md](anti-patterns.md) A20。
+- 网格线变换：竖直线 x=k → `Curve(k^2 − t^2, 2*k*t, t, −a, a)`；水平线 y=k → `Curve(t^2 − k^2, 2*k*t, t, −a, a)`；整族用 `Sequence(...)`（列表会渲染）。
+- 原网格线用**深色粗线**（浅灰会和背景网格混淆）。
+
+常用命令：`Curve`、`Sequence`、`Line`、`ImplicitCurve`、`SetLineThickness`。（真机实测，T20 复变 z² 网格。）
+
+### 4.12 离散分布与逼近模式
+
+适用：二项/泊松分布、二项 → 泊松极限、抽样分布经验直方。
+
+设计套路：
+
+- **pmf 显式算**：`BinomialCoefficient(n,k)*p^k*(1−p)^(n−k)`、`λ^k*exp(−λ)/k!`（不要依赖 `BinomialDist(n,p,k)` / `Poisson(λ,k)`，本引擎不可用，见 A19）。
+- 柱：`Sequence(Segment((k, 0), (k, pmf(k))), k, 0, n)`，`SetLineThickness` 加粗；对比曲线：`Polyline(Sequence((k, pmf2(k)), k, 0, m))`。
+- 视图：`ZoomIn(0, 0, n, 峰值)` 定向。
+
+常用命令：`BinomialCoefficient`、`Polyline`、`Segment`、`Sequence`、`exp`、`ZoomIn`。（真机实测，T22 泊松极限。）
+
+### 4.13 约束极值（拉格朗日乘数）模式
+
+适用：条件极值、拉格朗日乘数法、等值线与约束相切。
+
+设计套路：
+
+- 约束：`ImplicitCurve(g(x,y))`（如 `x^2 + y^2 − 1`），加粗突出。
+- 目标等值线：`ImplicitCurve(f(x,y) − c)`，`c` 为滑块，拖动看等值线"扫过"约束曲线。
+- 相切处即极值；用点对象标出极值点。
+
+常用命令：`ImplicitCurve`、`Slider`、`Point`、`SetLineThickness`。（真机实测，T21。）
+
+### 4.14 假设检验：两类错误模式
+
+适用：α（弃真）、β（取伪）、功效 1−β、临界值与效应量的权衡。
+
+设计套路：
+
+- 两条正态密度：`h0(x)=Normal(0,1,x,false)`、`h1(x)=Normal(d,1,x,false)`；临界值竖线。
+- 着色：α 尾 `Integral(h0, zc, 6)`；β 区 `Integral(h1, −6, zc)`（`Integral` 既画区域又给出面积值）。
+- 动态：`d`、`zc` 双滑块，文本实时显示 α、β、功效。
+
+常用命令：`Normal`、`Integral`、`Segment`、`Text`、`ZoomIn`。（真机实测，T24。）
+
 ## 5. 中文教学意图到命令检索的经验
 
 教师通常说中文，例如“我想让学生看到割线逼近切线”。技能包应先识别中文关键词，再联想到英文 GeoGebra 命令。高频映射（切线/面积/序列/曲面/线性变换/随机分布等）见 [SKILL.md 的「中文教学意图 → 英文命令快速映射」](../../SKILL.md)；完整映射见 `data/zh-command-aliases.json`。
