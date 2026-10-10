@@ -3,7 +3,7 @@ name: auto-geogebra
 description: Use when 需要把高校数学教学创意转化为可运行的 GeoGebra 动态演示/课件/动画：设计交互变量与滑块、生成并验证 GeoGebra 指令、导出 .ggb 文件（覆盖《高等数学》《线性代数》《概率论与数理统计》与数学专业课程）。触发词：GeoGebra 演示、ggb 课件、动态演示制作、滑块与参数设计、指令校验、导数/积分/线性变换/概率模拟类演示等。不要用于非数学教学用途，也不替代教师自己的教学设计。
 metadata:
   author: 张敬信 (zhjx19)
-  version: "1.5.9"
+  version: "1.5.10"
   source: autos.skills.geogebra v0.3.1 (aardio Autos skill)
 license: Apache-2.0
 ---
@@ -284,6 +284,13 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 | 随机/分布/直方图 | `RandomDiscrete`, `Histogram`, `BarChart`, `BinomialDist`, `Poisson` |
 
 ## 更新记录
+
+### v1.5.10（2026-10-10 · 第十一批实跑：6 类新主题 + 导出器 3D 修复）
+- **真机跑通 6 个新主题**：悬链线与抛物线、空间曲线切线与法平面（3D）、旋转曲面生成（3D）、F 分布、渐近线、圆锥曲线的统一定义（离心率）。（作品不随技能分发。）
+- **修复导出器 3D 检测**（`references/anti-patterns.md` A28）：3D 曲面类型为 `surfacecartesian3d`，旧版 3D-检测正则只写 `surface` → 漏判、纯曲面场景预览停在 2D。现正则改为 `[a-z0-9]*3d | quadric | surface[a-z0-9]*`。`Surface(f, 2π)` 旋转曲面本体可用。
+- **正面确认**：`Surface(<函数>, 2π)`、`Curve(空间)、`Tangent(点, 曲线)`、`FDistribution(d1,d2,x,false)` 密度均可用。
+- **模式扩充**：`patterns.md` 增悬链线、空间曲线切线、旋转曲面、渐近线、圆锥曲线离心率 5 个模式。
+- test-prompts 25 → 27 例；冒烟仍 29 项全绿。
 
 ### v1.5.9（2026-10-10 · 第十批实跑：6 类新主题）
 - **真机跑通 6 个新主题**：极坐标玫瑰线、平面方程与法向量（3D）、二次曲面截痕（3D）、卡方分布、单调有界数列收敛、线性方程组的几何形态。（作品不随技能分发。）

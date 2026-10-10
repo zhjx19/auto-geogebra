@@ -313,7 +313,7 @@ async function main() {
       has3d = await evalJS(`(function(){
         try {
           var x = window.ggbApplet.getXML();
-          return /type="(point3d|line3d|segment3d|vector3d|polygon3d|plane3d|conic3d|quadric|surface|polyhedron|net3d)"/.test(x);
+          return /type="([a-z0-9]*3d|quadric|surface[a-z0-9]*)"/.test(x);
         } catch (e) { return false; }
       })()`);
       if (has3d && args.png) {

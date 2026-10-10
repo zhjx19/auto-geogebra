@@ -45,6 +45,8 @@ node export_ggb.mjs --page page.html --cmds <指令文件> --out <输出.ggb> [-
 
 已通过初步评测：`Sphere` / `Plane`（三点式）/ `IntersectPath`（平面×球面 → 交线圆）/ 3D 点 / 多元函数 `f(x,y)` 均可经导出器执行并正确写入 .ggb（元素：quadric / plane3d / conic3d / point3d / functionnvar）。3D 视图在无头环境下可正常渲染（截图确认：三维坐标系、球体、交线圆均可见）；也可导入本地 GeoGebra 复核。
 
+**v1.5.10 修复**：3D 元素类型实际是 `surfacecartesian3d` 等带后缀名，旧版 3D-检测正则只写 `surface` → 漏判，导致纯曲面场景（如 `Surface(f, 2π)`）预览停在 2D。现正则改为匹配 `[a-z0-9]*3d` / `quadric` / `surface[a-z0-9]*`。
+
 ## 按钮与脚本（ggb_patch.py，v1.4）
 
 - **创建按钮**：指令中用单参形式 `btnReset = Button("重置")`（真机实测支持命名）。
