@@ -263,5 +263,15 @@
     "id": 53,
     "prompt": "演示 RK4 与 Euler 法解同一 ODE 的精度对比。",
     "expected": "第零层澄清（ODE、步长）→ 指令：同一 h 下手写 Euler（1 次求值/步）与 RK4（4 次求值/步，k1..k4）各前几步；`Polyline` 连折线；叠加精确解；对比误差。→ 双验证 → 真机导出。"
+  },
+  {
+    "id": 54,
+    "prompt": "演示一维元胞自动机（rule 90）生成 Sierpinski 三角形。",
+    "expected": "第零层澄清（规则、行数）→ 指令：第 (i,j) 格 = `BinomialCoefficient(i,j) mod 2`；点阵 `Sequence(Sequence(If(Mod(C(i,j),2)==1, (j-i/2, -i)), j, 0, i), i, 0, N)`（嵌套 Sequence + If，false 分支可缺省）。→ 双验证 → 真机导出。"
+  },
+  {
+    "id": 55,
+    "prompt": "演示贝叶斯后验更新：Beta 先验 + 二项数据 → Beta 后验。",
+    "expected": "第零层澄清（先验 a,b、数据 k,n）→ 指令：密度 `x^(a-1)(1-x)^(b-1)/B(a,b)`，后验 `Beta(a+k,b+n-k)`；**本引擎无 Beta() 函数（A34）** → 整数参数用阶乘 `B=(a-1)!(b-1)!/(a+b-1)!`；先验虚线、后验实线。→ 双验证 → 真机导出。"
   }
 ]

@@ -3,7 +3,7 @@ name: auto-geogebra
 description: Use when 需要把高校数学教学创意转化为可运行的 GeoGebra 动态演示/课件/动画：设计交互变量与滑块、生成并验证 GeoGebra 指令、导出 .ggb 文件（覆盖《高等数学》《线性代数》《概率论与数理统计》与数学专业课程）。触发词：GeoGebra 演示、ggb 课件、动态演示制作、滑块与参数设计、指令校验、导数/积分/线性变换/概率模拟类演示等。不要用于非数学教学用途，也不替代教师自己的教学设计。
 metadata:
   author: 张敬信 (zhjx19)
-  version: "1.5.23"
+  version: "1.5.24"
   source: autos.skills.geogebra v0.3.1 (aardio Autos skill)
 license: Apache-2.0
 ---
@@ -213,6 +213,7 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 - 3D 空间曲线上 `OsculatingCircle` **失败**（二维可用）→ 曲率/挠率用解析式 + `Vector` 画 T、N 箭头（真机实测 A31）；
 - 内置命令 `Max`/`Min` 必须**首字母大写**（小写 `max()`/`min()` 静默失败）——L1 已提醒 `lowercase-command`（真机实测 A32）；
 - 分布 CDF 要**画曲线**时别用 `Normal(μ,σ,x)`（对符号变量不绘制）→ 用解析式 `0.5*(1+erf(x/sqrt(2)))`；纯数值 cumulative 仍可用（真机实测 A33）；
+- 无 `Beta(a,b)` 函数命令 → 整数参数用阶乘 `(a-1)!(b-1)!/(a+b-1)!`；`Integral(f,a,b)` 会**顺带画出积分区域**（要纯数值就隐藏它）（真机实测 A34）；
 - 3D 场景：`Text(..., (x,y,z), …)` 的文字**无头预览不显示**（位置已写入 `.ggb` 的 `<startPoint>`，本体正确）；`ZoomIn(...)` 对 3D 预览取景无效（导出器 `setPerspective("T3")` 重置）——3D 文字/取景的预览缺失不算功能错误（真机实测 B14/B15）。
 
 ## 输出给教师的推荐格式
@@ -290,6 +291,13 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 | 随机/分布/直方图 | `RandomDiscrete`, `Histogram`, `BarChart`, `BinomialDist`, `Poisson` |
 
 ## 更新记录
+
+### v1.5.24（2026-10-10 · 第二十五批实跑：6 类新主题）
+- **真机跑通 6 个新主题**：Logistic 映射蛛网图、M/M/1 排队系统、元胞自动机 rule 90（Sierpinski）、对数几率与 sigmoid、矩阵指数 e^{At}、贝叶斯后验更新（Beta-二项共轭）。（作品不随技能分发。）
+- **真机实测新坑沉淀**（`references/anti-patterns.md` A34）：本引擎**无 `Beta(a,b)` 函数**（L1 亦报未定义）→ 整数参数用阶乘求 Beta `(a-1)!(b-1)!/(a+b-1)!`；且 `Integral(f,0,1)` 会**顺带画出积分区域**对象。
+- **正面确认**：**嵌套 `Sequence(Sequence(If(...)))` + 缺省 false 分支**可生成分形点阵（元胞自动机）；`Polyline` 画蛛网；`exp/ln` 组合画矩阵指数螺旋。
+- **模式扩充**：`patterns.md` 增 Logistic 蛛网、M/M/1、元胞自动机、sigmoid/logit、矩阵指数、贝叶斯后验 6 个模式（4.137–4.142）。
+- test-prompts 53 → 55 例；冒烟仍 31 项全绿。
 
 ### v1.5.23（2026-10-10 · 第二十四批实跑：6 类新主题）
 - **真机跑通 6 个新主题**：蒲丰投针、ROC 曲线与 AUC、拓扑排序（DAG）、泊松过程、RK4 与 Euler 精度对比、低秩逼近（SVD 截断）。（作品不随技能分发。）
