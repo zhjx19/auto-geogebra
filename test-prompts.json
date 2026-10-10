@@ -133,5 +133,15 @@
     "id": 27,
     "prompt": "用一个可调离心率 e 演示圆锥曲线的统一定义：e<1 椭圆、e=1 抛物线、e>1 双曲线。",
     "expected": "第零层澄清（p/d、e 范围）→ 指令：极坐标 `r(θ)=e·d/(1+e·cosθ)`；极坐标曲线 `Curve(r(t)cos t, r(t)sin t, t, -π, π)`；焦点 (0,0)、准线 `Line`；e 作滑块。注意 `r(t)` 是辅助函数须 `SetVisibleInView(r,1,false)` 隐藏（A18）。→ 双验证 → 真机导出。"
+  },
+  {
+    "id": 28,
+    "prompt": "三维演示：直线与平面的位置关系，直线方向可变，看交点。",
+    "expected": "第零层澄清（直线方向、平面）→ 指令：直线 `Line((0,0,0),(dx,dy,dz))`（方向量滑块，避免第三分量为 0 以免平行）、平面 `Plane(三点)`、交点 `Intersect(直线, 平面)`；3D 导出自动切视图。→ 双验证 → 真机导出。"
+  },
+  {
+    "id": 29,
+    "prompt": "演示样本均值的抽样分布：重复抽很多次，把样本均值画出来，看它随样本量增大越来越集中。",
+    "expected": "第零层澄清（分布、n、m 范围）→ 指令：`means = Sequence(Mean(Sequence(RandomNormal(0,1), j, 1, n)), i, 1, m)`；rug 图 `Sequence(Segment((Element(means,i),0),(Element(means,i),h)), i, 1, m)`；文本对比经验 SD 与 `σ/√n`；重抽样用 tick 变量；`n`、`m` 作滑块。→ 双验证 → 真机导出。"
   }
 ]

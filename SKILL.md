@@ -3,7 +3,7 @@ name: auto-geogebra
 description: Use when 需要把高校数学教学创意转化为可运行的 GeoGebra 动态演示/课件/动画：设计交互变量与滑块、生成并验证 GeoGebra 指令、导出 .ggb 文件（覆盖《高等数学》《线性代数》《概率论与数理统计》与数学专业课程）。触发词：GeoGebra 演示、ggb 课件、动态演示制作、滑块与参数设计、指令校验、导数/积分/线性变换/概率模拟类演示等。不要用于非数学教学用途，也不替代教师自己的教学设计。
 metadata:
   author: 张敬信 (zhjx19)
-  version: "1.5.10"
+  version: "1.5.11"
   source: autos.skills.geogebra v0.3.1 (aardio Autos skill)
 license: Apache-2.0
 ---
@@ -284,6 +284,14 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 | 随机/分布/直方图 | `RandomDiscrete`, `Histogram`, `BarChart`, `BinomialDist`, `Poisson` |
 
 ## 更新记录
+
+### v1.5.11（2026-10-10 · 第十二批实跑：6 类新主题 + 3D 检测再修）
+- **真机跑通 6 个新主题**：锥面与柱面（3D）、直线与平面位置关系（3D）、正交矩阵保持长度、闭区间套定理、样本均值的抽样分布（rug 图）、梯度下降求最小值。（作品不随技能分发。）
+- **3D 检测再修**：`Cylinder`/`Cone` 的元素类型是 `quadriclimited`，上一版正则仍漏判 → 改为匹配**任何含 `3d`/`quadric`/`surface` 的类型名**（A28）。
+- **新记录 B11**：导出偶发 `EBUSY … DevToolsActivePort`（临时 profile 被占用）→ **重试一次**即可（非指令问题）。
+- **正面确认**：`Cylinder`/`Cone`、`Intersect(直线, 平面)` → 3D 交点、`ApplyMatrix`（向量）、`Length`/`Angle`、rug 图 `Sequence(Segment(...))` 均可用。
+- **模式扩充**：`patterns.md` 增锥面柱面、直线与平面、正交矩阵、闭区间套、抽样分布 rug、梯度下降 6 个模式。
+- test-prompts 27 → 29 例；冒烟仍 29 项全绿。
 
 ### v1.5.10（2026-10-10 · 第十一批实跑：6 类新主题 + 导出器 3D 修复）
 - **真机跑通 6 个新主题**：悬链线与抛物线、空间曲线切线与法平面（3D）、旋转曲面生成（3D）、F 分布、渐近线、圆锥曲线的统一定义（离心率）。（作品不随技能分发。）

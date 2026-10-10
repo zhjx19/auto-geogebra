@@ -34,7 +34,7 @@
 | A25 ⚙️ | 字面量点列表 `{(x,y), …}` 定义后，图上的数据点**看不见** | 该引擎把**字面量列表**创建为**隐藏**（`show object="false"`）；`Sequence` 生成的列表、`Append` 的结果则可见 | 对字面量点列表加 `SetVisibleInView(列表, 1, true)`（或改用 `Sequence`/`Append` 生成）（真机实测，T40/T34/T43） |
 | A26 ⚙️ | `Rank(<矩阵>)` 执行失败 | 该命令在本引擎不可用 | 判断线性相关用 `Determinant`（2×2：det=0 ⟺ 共线）；更高维可参考 `ReducedRowEchelonForm`（真机实测） |
 | A27 ⚙️ | `ln = a*x + b*y = c`（把**方程本身**当对象）执行失败 | 经命令注入时，**方程形式的对象定义**（含 `=`）不受支持 | 直线用 `Line(点, 点)` / `Line(点, 向量)`；由方程 `a*x + b*y − c = 0` 可用 `ImplicitCurve(a*x + b*y - c)`（真机实测，probeL） |
-| A28 ⚙️ | 纯 3D 曲面场景（如 `Surface(f, 2π)`）导出预览仍是 2D、看不到曲面 | 3D 曲面元素实际类型是 `surfacecartesian3d`，而导出器旧版 3D-检测正则只写 `surface` → 漏判、不切 3D 视图 | **已修**：导出器正则改为匹配 `[a-z0-9]*3d` / `quadric` / `surface[a-z0-9]*`。`Surface(<函数>, 2π)` 本体可用（真机实测，T70） |
+| A28 ⚙️ | 纯 3D 曲面/几何体场景（`Surface(f,2π)`、`Cylinder`、`Cone`…）导出预览仍是 2D、看不到 3D | 3D 元素实际类型是 `surfacecartesian3d` / `quadriclimited` 等**带后缀名**，旧版 3D-检测正则只写 `surface` → 漏判、不切 3D 视图 | **已修**：导出器正则改为匹配**任何含 `3d`/`quadric`/`surface` 的类型名**（覆盖 `surfacecartesian3d`、`quadriclimited` 等）（真机实测，T70/T74） |
 
 ## B. 验证行为坑
 
@@ -50,6 +50,7 @@
 | B8 | L2 报 `Dot(<点>, <点>)` 参数类型不匹配；报 `SetLineStyle(<函数>, n)` 需要 `Line` | 点可作位置向量参与 `Dot`；样式类命令第一参可为任意可绘制对象，而索引签名过窄 | **v1.5.1 已修复**（点纳入 Vector 的可接受集；`SetLineStyle/SetLineThickness/…` 跳过类型检查） |
 | B9 | L1 报 `gg(k) = …` 里的形参 `k` 「使用前未定义」 | 函数定义的形参未被当作"本行已定义" | **v1.5.2 已修复**（提取 `Name(参数…) = …` 的形参并豁免） |
 | B10 | L1 报 `BinomialCoefficient` / `nCr` 「使用前未定义」 | 组合数函数不在内置函数表（但真机可用） | **v1.5.2 已修复**（补入 `BinomialCoefficient` / `nCr` / `nPr`） |
+| B11 | 导出偶发 `EBUSY: resource busy or locked … DevToolsActivePort` | 临时浏览器 profile 被占用（前次进程残留 / 杀软扫描），非指令问题 | 直接**重试一次**即可（真机实测，偶发） |
 
 ## C. 教学设计反例（评审视角）
 

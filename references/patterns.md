@@ -774,6 +774,77 @@
 
 常用命令：`Curve`、`Line`、`Slider`。（真机实测，T73。）
 
+### 4.59 锥面与柱面模式（3D）
+
+适用：柱面、锥面、旋转面、二次曲面。
+
+设计套路：
+
+- `Cylinder((点),(点), 半径)` → 柱面；`Cone((点),(点), 半径)` → 锥面（类型 `quadriclimited`）。
+- 观察重点：柱面由母线平移生成、锥面由母线绕轴旋转收缩生成。
+
+常用命令：`Cylinder`、`Cone`。（真机实测，T74；配合 A28。）
+
+### 4.60 直线与平面位置关系模式（3D）
+
+适用：直线与平面、空间位置关系、方程组的几何解。
+
+设计套路：
+
+- 直线 `Line((0,0,0), (dx,dy,dz))`（方向量滑块）；平面 `Plane(三点)`。
+- 交点 `Intersect(直线, 平面)` → `point3d`（方向量第三分量为 0 时平行、无交点，注意避免）。
+- 观察重点：交点即方程组的解。
+
+常用命令：`Line`、`Plane`、`Intersect`、`Slider`。（真机实测，T75。）
+
+### 4.61 正交矩阵与保长变换模式
+
+适用：正交矩阵、旋转、反射、保持长度/夹角。
+
+设计套路：
+
+- 旋转矩阵 `R = {{cosθ,−sinθ},{sinθ,cosθ}}`；向量 `u` 与像 `Ru = Vector((0,0), ApplyMatrix(R, (x,y)))`。
+- 文本对比 `Length(u)` 与 `Length(Ru)`（相等）、`Angle(u, Ru)`。
+- 观察重点：正交变换保持长度与夹角。
+
+常用命令：`ApplyMatrix`、`Vector`、`Length`、`Angle`。（真机实测，T76。）
+
+### 4.62 闭区间套模式
+
+适用：闭区间套定理、区间收缩、实数完备性。
+
+设计套路：
+
+- 一列嵌套区间用 `Sequence(Segment((0, k), (1/k, k)), k, 1, n)`（横向线段，逐层缩短）。
+- 交集点用竖线 `Segment` 标出。
+
+常用命令：`Sequence`、`Segment`。（真机实测，T77。）
+
+### 4.63 抽样分布（rug 图）模式
+
+适用：样本均值抽样分布、中心极限定理、σ/√n。
+
+设计套路：
+
+- 重复抽样 `means = Sequence(Mean(Sequence(RandomNormal(0,1), j, 1, n)), i, 1, m)`（`n`、`m` 滑块）。
+- rug 图：`Sequence(Segment((Element(means,i), 0), (Element(means,i), h)), i, 1, m)`。
+- 文本对比经验 SD 与理论 `σ/√n`；重抽样用 tick 变量（interaction-patterns §8）。
+- 观察重点：n 增大时 rug 收窄、趋近正态。
+
+常用命令：`Sequence`、`Mean`、`SD`、`RandomNormal`、`Element`、`Segment`。（真机实测，T78。）
+
+### 4.64 梯度下降（一维）模式
+
+适用：梯度下降、优化、逐步逼近极小。
+
+设计套路：
+
+- 目标 `f`、梯度 `df = Derivative(f)`；`Iteration` 不可用（A23）→ 手写前几步 `x1 = x0 − η·df(x0)` …
+- 曲线上的迭代点用**字面量点列表**（须 `SetVisibleInView(列表,1,true)`，A25）+ `Polyline`。
+- 观察重点：步长 η 影响收敛速度与稳定性。
+
+常用命令：`Derivative`、`Polyline`、`Slider`、`SetVisibleInView`。（真机实测，T79。）
+
 ## 5. 中文教学意图到命令检索的经验
 
 教师通常说中文，例如“我想让学生看到割线逼近切线”。技能包应先识别中文关键词，再联想到英文 GeoGebra 命令。高频映射（切线/面积/序列/曲面/线性变换/随机分布等）见 [SKILL.md 的「中文教学意图 → 英文命令快速映射」](../../SKILL.md)；完整映射见 `data/zh-command-aliases.json`。
