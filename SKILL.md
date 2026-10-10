@@ -3,7 +3,7 @@ name: auto-geogebra
 description: Use when 需要把高校数学教学创意转化为可运行的 GeoGebra 动态演示/课件/动画：设计交互变量与滑块、生成并验证 GeoGebra 指令、导出 .ggb 文件（覆盖《高等数学》《线性代数》《概率论与数理统计》与数学专业课程）。触发词：GeoGebra 演示、ggb 课件、动态演示制作、滑块与参数设计、指令校验、导数/积分/线性变换/概率模拟类演示等。不要用于非数学教学用途，也不替代教师自己的教学设计。
 metadata:
   author: 张敬信 (zhjx19)
-  version: "1.5.18"
+  version: "1.5.19"
   source: autos.skills.geogebra v0.3.1 (aardio Autos skill)
 license: Apache-2.0
 ---
@@ -210,6 +210,7 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 - 字面量点列表 `{(x,y), …}` 默认**隐藏**（数据点看不见）→ `SetVisibleInView(列表, 1, true)`；`Rank` **不可用**，判线性相关用 `Determinant`；
 - 方程 `a*x + b*y = c` 作对象**失败** → 直线用 `Line(点, 点)` 或 `ImplicitCurve(a*x + b*y - c)`；
 - `SetCaption(对象, "T")` 只设标题、**不显示** → 需再加 `ShowLabel(对象, true)`（真机实测 A29）；
+- 3D 空间曲线上 `OsculatingCircle` **失败**（二维可用）→ 曲率/挠率用解析式 + `Vector` 画 T、N 箭头（真机实测 A31）；
 - 3D 场景：`Text(..., (x,y,z), …)` 的文字**无头预览不显示**（位置已写入 `.ggb` 的 `<startPoint>`，本体正确）；`ZoomIn(...)` 对 3D 预览取景无效（导出器 `setPerspective("T3")` 重置）——3D 文字/取景的预览缺失不算功能错误（真机实测 B14/B15）。
 
 ## 输出给教师的推荐格式
@@ -287,6 +288,14 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 | 随机/分布/直方图 | `RandomDiscrete`, `Histogram`, `BarChart`, `BinomialDist`, `Poisson` |
 
 ## 更新记录
+
+### v1.5.19（2026-10-10 · 第二十批实跑：6 类新主题）
+- **真机跑通 6 个新主题**：高斯公式（散度定理）、留数定理、曲率与挠率、矩母函数与矩、条件数与数值稳定性、线性规划（单纯形法几何）。（作品不随技能分发。）
+- **真机实测新坑沉淀**（`references/anti-patterns.md` A31）：`OsculatingCircle(<点>, <3D 曲线>)` **执行失败**（二维曲线可用）→ 空间曲线的曲率/挠率改用解析式 + `Vector` 画 T、N 箭头。
+- **A1 再现两次**：留数极点 `pole123`、单纯形最优顶点 `opt127`/`orig127` 小写名+坐标被当作**向量** → 全部改大写（L1 已提示）。
+- **正面确认（含 3D）**：`Sphere` + 显式 `Vector` 径向通量箭头；`Circle` 回路 + `If(R>1, …)` 判包围极点；`exp` 组合函数 + 切线；近平行 `Line` + `Intersect(直线,直线)`；`Polygon` 可行域 + 等值线平移。
+- **模式扩充**：`patterns.md` 增高斯公式、留数定理、曲率与挠率、矩母函数、条件数、线性规划 6 个模式（4.107–4.112）。
+- test-prompts 43 → 45 例；冒烟仍 30 项全绿。
 
 ### v1.5.18（2026-10-10 · 第十九批实跑：6 类新主题）
 - **真机跑通 6 个新主题**：斯托克斯公式（曲面任选）、欧拉公式 e^{iθ}（与泰勒级数一致）、贝塞尔函数 J_n(x)、二重积分·极坐标累次、结点相图、傅里叶级数逼近锯齿波（Gibbs）。（作品不随技能分发。）

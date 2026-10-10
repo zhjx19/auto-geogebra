@@ -37,6 +37,7 @@
 | A28 ⚙️ | 纯 3D 曲面/几何体场景（`Surface(f,2π)`、`Cylinder`、`Cone`…）导出预览仍是 2D、看不到 3D | 3D 元素实际类型是 `surfacecartesian3d` / `quadriclimited` 等**带后缀名**，旧版 3D-检测正则只写 `surface` → 漏判、不切 3D 视图 | **已修**：导出器正则改为匹配**任何含 `3d`/`quadric`/`surface` 的类型名**（覆盖 `surfacecartesian3d`、`quadriclimited` 等）（真机实测，T70/T74） |
 | A29 ⚙️ | `SetCaption(Vec, "T")` 设了标题，图形区仍不显示标签 | `SetCaption` 只把对象 `labelMode` 置为 caption（`val=3`），但该对象 `show label` 仍为 `false` | 追加 `ShowLabel(对象, true)` 才会显示 caption（真机实测，T107） |
 | A30 ⚙️ | 嵌套求和 `Sum(Sum(expr, rr, 1, 60), tt, 1, 90)` 执行失败（各项单独都合法） | 本引擎对**嵌套 `Sum`**（内层不含外层变量）支持不佳 | 把双重求和**可分离化**：内层单独定义 `inner = Sum(...)`，外层用析出因子替代（如 `inner * 2*pi`），或改用单层 `Sum`（真机实测，T119） |
+| A31 ⚙️ | `OsculatingCircle(<点>, <3D 曲线>)` 执行失败（二维曲线上可用，见 T30 曲率圆） | 密切圆命令**不支持空间曲线** | 3D 曲线的曲率/挠率改用**解析式** + `Vector(...)` 画 T、N 箭头 + 动态文本给 κ、τ（真机实测，T124） |
 
 ## B. 验证行为坑
 
