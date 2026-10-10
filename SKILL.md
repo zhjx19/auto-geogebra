@@ -3,7 +3,7 @@ name: auto-geogebra
 description: Use when 需要把高校数学教学创意转化为可运行的 GeoGebra 动态演示/课件/动画：设计交互变量与滑块、生成并验证 GeoGebra 指令、导出 .ggb 文件（覆盖《高等数学》《线性代数》《概率论与数理统计》与数学专业课程）。触发词：GeoGebra 演示、ggb 课件、动态演示制作、滑块与参数设计、指令校验、导数/积分/线性变换/概率模拟类演示等。不要用于非数学教学用途，也不替代教师自己的教学设计。
 metadata:
   author: 张敬信 (zhjx19)
-  version: "1.5.16"
+  version: "1.5.17"
   source: autos.skills.geogebra v0.3.1 (aardio Autos skill)
 license: Apache-2.0
 ---
@@ -197,7 +197,7 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 - `Eigenvalues`/`Eigenvectors` 是 **CAS 专属**，导出引擎不支持 → 2×2 手算（L1 已静态提醒）；
 - `Derivative(f, x)` 等中间函数会被**自动画出曲面**，用 `SetVisibleInView(fn, -1, false)` 隐藏；
 - `Sequence`/`Zip` 造的对象列表在 .ggb 里只存定义，核验用 `Length()` 而非数对象；
-- 变上限积分 Φ(x)=∫ₐˣf：`Integral(f, x)`（反导数）作函数求值为 **NaN**、变限 `Integral(f, a, x)` **不创建** → 用黎曼和 `Sum(f(a + (x - a) * i / n) * (x - a) / n, i, 1, n)`；
+- 变上限积分 Φ(x)=∫ₐˣf：`Integral(f, x)`（反导数）作函数求值为 **NaN**、变限 `Integral(f, a, x)` **不创建** → 用黎曼和 `Sum(f(a + (x - a) * i / n) * (x - a) / n, i, 1, n)`（注：定积分 `Integral(f, a, b)`（a,b 为数值）**可用**）；
 - 解曲线：`SolveODE(f, 点)` 返回**不可求值**的 function（不绘制）→ 用 `SolveODE(f, x0, y0, xEnd, step)`（可绘制）；
 - `(0,0) + 向量` 得**向量**、`Point(向量)` 失败 → 求垂足用 `ClosestPoint(<直线>, <点>)`；
 - 为计算而定义的**辅助函数会被自动绘制**（重复曲线/多余曲面）→ `SetVisibleInView(fn, 1, false)`（2D）/`(fn, -1, false)`（3D）隐藏；
@@ -286,6 +286,13 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 | 随机/分布/直方图 | `RandomDiscrete`, `Histogram`, `BarChart`, `BinomialDist`, `Poisson` |
 
 ## 更新记录
+
+### v1.5.17（2026-10-10 · 第十八批实跑：6 类新主题）
+- **真机跑通 6 个新主题**：约当块（不可对角化）、拉格朗日余项（泰勒误差界）、勒让德多项式正交性、共形映射（单位圆 → 上半平面）、稳定焦点相图、维数公式（子空间交与和）。（作品不随技能分发。）
+- **正面确认**：`k!` 阶乘与 `Sum(…, k, 0, n)`（n 为滑块）作函数可用；**定积分 `Integral(f, a, b)`（a,b 为数值）可用**（澄清 A14 的误解——只有反导数/变限形式失效）；`If(m == n, …)` 选择 + 用户函数乘积的数值积分可用于正交性核对；分式线性变换用实虚部显式公式 + `Curve` 画像曲线可用；`SolveODE(y', x', …)` 画稳定焦点螺旋可用；3D `Plane(三点)` + `Line` + `Vector` + `If(s == 0, …)` 可用。
+- **模式扩充**：`patterns.md` 增约当块、拉格朗日余项、勒让德正交、分式线性变换、焦点相图、维数公式 6 个模式（4.95–4.100）。
+- **坑再现**：`Polygon` 自动生边 + 标签（A17，T110）；3D 文字无头预览不渲染（B14，T115）。
+- test-prompts 39 → 41 例；冒烟仍 30 项全绿。
 
 ### v1.5.16（2026-10-10 · 第十七批实跑：6 类新主题）
 - **真机跑通 6 个新主题**：奇异值分解的几何（单位圆 → 椭圆）、多元复合函数的链式法则（依赖树）、格林公式（环流 = 旋度积分）、Frenet 标架（T/N/B）、简谐振动相图（中心）、切比雪夫多项式（极小极大）。（作品不随技能分发。）
