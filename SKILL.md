@@ -3,7 +3,7 @@ name: auto-geogebra
 description: Use when 需要把高校数学教学创意转化为可运行的 GeoGebra 动态演示/课件/动画：设计交互变量与滑块、生成并验证 GeoGebra 指令、导出 .ggb 文件（覆盖《高等数学》《线性代数》《概率论与数理统计》与数学专业课程）。触发词：GeoGebra 演示、ggb 课件、动态演示制作、滑块与参数设计、指令校验、导数/积分/线性变换/概率模拟类演示等。不要用于非数学教学用途，也不替代教师自己的教学设计。
 metadata:
   author: 张敬信 (zhjx19)
-  version: "1.5.21"
+  version: "1.5.22"
   source: autos.skills.geogebra v0.3.1 (aardio Autos skill)
 license: Apache-2.0
 ---
@@ -289,6 +289,13 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 | 随机/分布/直方图 | `RandomDiscrete`, `Histogram`, `BarChart`, `BinomialDist`, `Poisson` |
 
 ## 更新记录
+
+### v1.5.22（2026-10-10 · 第二十三批实跑：6 类新主题）
+- **真机跑通 6 个新主题**：中心极限定理模拟、最小生成树（Kruskal）、决策树的信息增益、正定矩阵与二次型曲面（3D）、傅里叶变换初步（高斯对偶）、共轭梯度法。（作品不随技能分发。）
+- **本轮无新引擎坑**；一条环境坑再现（B11：导出偶发 `EBUSY` → 重试一次即过）。
+- **正面确认**：`Sum(Random(), …)` 每次重抽、`Sequence(Sum(If(…), i, 1, N), k, 1, b)`（`Sum` 放进 `Sequence` 元素）可用——分箱直方图不必用会失败的嵌套 `Sum`；单字母大写点（`A`…`E`）作顶点标签干净；`Surface(u,v,f(u,v),…)` 画 3D 二次型曲面；`ImplicitCurve` 画二次型等高线。
+- **模式扩充**：`patterns.md` 增中心极限定理、最小生成树、信息增益、二次型曲面、傅里叶变换初步、共轭梯度 6 个模式（4.125–4.130）。
+- test-prompts 49 → 51 例；冒烟仍 31 项全绿。
 
 ### v1.5.21（2026-10-10 · 第二十二批实跑：6 类新主题 + 验证器修 lowercase 命令）
 - **真机跑通 6 个新主题**：三次样条插值 vs 插值多项式、Gershgorin 圆盘、主成分分析（PCA）、K-means 聚类迭代、Dijkstra 最短路、信息熵（二元熵函数）。（作品不随技能分发。）

@@ -243,5 +243,15 @@
     "id": 49,
     "prompt": "演示 K-means 聚类：每个点归入最近中心，中心移到簇均值。",
     "expected": "第零层澄清（数据、k）→ 指令：数据点 + k 个中心；中心用滑块从初值线性插到最终均值（手算）；每个点到其中心画 `Segment`；`SetPointSize(中心, 7)` 加大中心点。迭代到分配不再变化即收敛。→ 双验证 → 真机导出。"
+  },
+  {
+    "id": 50,
+    "prompt": "演示中心极限定理：样本均值的分布趋近正态。",
+    "expected": "第零层澄清（n、样本数 N）→ 指令：均值 = n 个 `Random()` 之和 / n；`avgs = Sequence(<均值>, i, 1, N)`；分箱 `bins = Sequence(Sum(If((kk-1)/b <= Element(avgs,i) < kk/b, 1, 0), i, 1, N), kk, 1, b)`（**Sum 放进 Sequence 元素，非嵌套 Sum**，A30）；柱用 Segment，叠加 `Normal(0.5, 1/sqrt(12n), x, false)`。→ 双验证 → 真机导出。"
+  },
+  {
+    "id": 51,
+    "prompt": "演示正定/不定矩阵对应的二次型曲面（碗、鞍、槽）。",
+    "expected": "第零层澄清（矩阵 A）→ 指令：`Surface(u, v, a*u^2 + 2*b*u*v + c*v^2, u, -2, 2, v, -2, 2)`；特征值手算 `λ = (tr ± sqrt(Max(tr^2-4det,0)))/2`（**大写 Max**，A32）；按 λ 符号判断碗/鞍/槽。→ 双验证 → 真机导出。"
   }
 ]
