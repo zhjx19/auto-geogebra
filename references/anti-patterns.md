@@ -52,6 +52,7 @@
 | B10 | L1 报 `BinomialCoefficient` / `nCr` 「使用前未定义」 | 组合数函数不在内置函数表（但真机可用） | **v1.5.2 已修复**（补入 `BinomialCoefficient` / `nCr` / `nPr`） |
 | B11 | 导出偶发 `EBUSY: resource busy or locked … DevToolsActivePort` | 临时浏览器 profile 被占用（前次进程残留 / 杀软扫描），非指令问题 | 直接**重试一次**即可（真机实测，偶发） |
 | B12 | 无头预览里**希腊字母**（ζ、ω 等）显示为空/缺字形，但 `.ggb` 文本本身正确 | 无头 Chrome 缺对应字体字形（中文正常、希腊字母缺） | `.ggb` 本体无碍（教师本地 GeoGebra 字体齐全）；预览只作功能核对，**不必因缺字重导**（真机实测，T82） |
+| B13 | L1 报 `Surface(u, v, u^2−v^2, u, −1, 1, v, −1, 1)` 的参数变量 `u`/`v` 「使用前未定义」 | `Surface` 的参数变量未被当作绑定变量（`Curve`/`Function` 已豁免，`Surface` 漏了） | **v1.5.14 已修复**（`Surface` 列入迭代命令豁免，裸标识符参数视为已定义） |
 
 ## C. 教学设计反例（评审视角）
 

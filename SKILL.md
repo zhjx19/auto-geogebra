@@ -3,7 +3,7 @@ name: auto-geogebra
 description: Use when 需要把高校数学教学创意转化为可运行的 GeoGebra 动态演示/课件/动画：设计交互变量与滑块、生成并验证 GeoGebra 指令、导出 .ggb 文件（覆盖《高等数学》《线性代数》《概率论与数理统计》与数学专业课程）。触发词：GeoGebra 演示、ggb 课件、动态演示制作、滑块与参数设计、指令校验、导数/积分/线性变换/概率模拟类演示等。不要用于非数学教学用途，也不替代教师自己的教学设计。
 metadata:
   author: 张敬信 (zhjx19)
-  version: "1.5.13"
+  version: "1.5.14"
   source: autos.skills.geogebra v0.3.1 (aardio Autos skill)
 license: Apache-2.0
 ---
@@ -257,7 +257,7 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 
 - `scripts/validate_commands.py` — **L1 语法验证器**：括号配对、SetColor 0-1 范围、Text 的 `\n`、Slider 参数、命令拼写、未定义变量，输出 JSON 报告。
 - `scripts/validate_types.py` — **L2 语义（类型）验证器**：用 `data/commands-index.json` 的类型签名检查参数类型、矩阵维度、数值列表；与 L1 组成「双验证」。
-- `scripts/smoke_test.py` — **回归冒烟测试**：好样例 ×3、埋错样例（9 类）、stdin/BOM/GBK 编码边界、命名规则、使用顺序、Zip 循环变量、反三角别名、引擎不支持命令、大写用户函数、点内积、样式命令、函数形参共 **29 项**检查一键复跑；改动验证器后必须全绿（维护者用）。
+- `scripts/smoke_test.py` — **回归冒烟测试**：好样例 ×3、埋错样例（9 类）、stdin/BOM/GBK 编码边界、命名规则、使用顺序、Zip 循环变量、反三角别名、引擎不支持命令、大写用户函数、点内积、样式命令、函数形参、Surface 参数共 **30 项**检查一键复跑；改动验证器后必须全绿（维护者用）。
 - `scripts/build_index.py` — **指令索引重建工具**：从本机 GeoGebra manual（asciidoc）重建 `data/commands-index.json`，支持 `--compare` 与现有索引做字段级对照（维护者用）。
 - `tools/ggb-export/` — **真机导出工具**：零依赖 Node 脚本，调用官方引擎把指令导出为 .ggb 并逐条核验（用法见其 README）。
 - `tools/ggb-export/ggb_patch.py` — **按钮/脚本注入器**：把 GGBScript 注入导出的 .ggb（按钮脚本无法经命令注入，真机实测）。
@@ -284,6 +284,13 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 | 随机/分布/直方图 | `RandomDiscrete`, `Histogram`, `BarChart`, `BinomialDist`, `Poisson` |
 
 ## 更新记录
+
+### v1.5.14（2026-10-10 · 第十五批实跑：6 类新主题 + 验证器修 Surface）
+- **真机跑通 6 个新主题**：复数的几何运算、棣莫弗定理与单位根、二重积分曲顶柱体（3D）、函数图像变换、反三角函数、正态分布标准分（Z 变换）。（作品不随技能分发。）
+- **验证器修复**（`references/anti-patterns.md` B13）：L1 把 `Surface(u,v,…,u,…)` 的参数变量 `u`/`v` 误报未定义 → `Surface` 列入迭代命令豁免。回归套件 29 → **30 项**。
+- **正面确认（3D）**：`Surface(u, v, f(u,v), u, a, b, v, c, d)` 显式参数式建曲面；`Polygon(四个 3D 点)` 作底面。
+- **模式扩充**：`patterns.md` 增复数几何运算、单位根、曲顶柱体、函数图像变换、反三角函数、正态 Z 变换 6 个模式。
+- test-prompts 33 → 35 例。
 
 ### v1.5.13（2026-10-10 · 第十四批实跑：6 类新主题）
 - **真机跑通 6 个新主题**：复变反演 w=1/z、空间曲线切向量（3D）、复合函数图像、格拉姆-施密特正交化、幂级数逐项求导、幂指函数 xˣ 与对数求导。（作品不随技能分发。）

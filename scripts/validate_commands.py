@@ -113,7 +113,7 @@ BUILTIN_WORDS = {
 
 # 迭代型命令：行内的单字母标识符几乎都是循环变量，豁免未定义检查
 ITERATOR_CMDS = {"Sequence", "Sum", "Product", "Zip", "KeepIf", "Filter", "Sort", "CountIf",
-                 "Curve", "Function"}
+                 "Curve", "Function", "Surface"}
 
 # 本技能真机导出引擎（无头 classic app）**不支持**的命令（真机实测）。
 # 注意：这些命令在指令索引里存在，L2 类型检查不会报错，只有真机执行才暴露。
@@ -180,8 +180,9 @@ def iter_bound_vars(text):
         args = _split_top_args(text[open_idx + 1:j])
         if fn == "Zip":
             pos = list(range(1, len(args), 2))
-        elif fn in ("Curve", "Function"):
-            # Curve(exprX, exprY, t, a, b)：参数变量是其中的裸标识符（如 t）
+        elif fn in ("Curve", "Function", "Surface"):
+            # Curve(exprX, exprY, t, a, b) / Surface(exprX, exprY, exprZ, u, a, b, v, c, d)：
+            # 参数变量是其中的裸标识符（如 t、u、v）
             pos = [k for k, a in enumerate(args) if re.fullmatch(r"[A-Za-z]\w*", a.strip())]
         else:
             pos = _ITER_VAR_POS.get(fn, [])

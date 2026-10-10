@@ -197,6 +197,10 @@ hh(m, n) = m * n + 1
 bc(k) = BinomialCoefficient(5, k) * k
 """
 
+SURF_PARAM_CASES = r"""# Surface 参数变量豁免（v1.5.14）
+sfX = Surface(u, v, u^2 - v^2, u, -1, 1, v, -1, 1)
+"""
+
 CHECKS = 0
 FAILURES = []
 
@@ -467,6 +471,15 @@ def main():
             f.write(FN_PARAM_CASES)
         rep = run(L1, [fp])
         check("L1 函数形参（非内置名）不误报未定义",
+              bool(rep) and rep.get("ok") is True and not rep.get("warnings"),
+              json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
+
+        # ---------- Surface 参数变量豁免（v1.5.14） ----------
+        sp = os.path.join(tmp, "surf_param.txt")
+        with open(sp, "w", encoding="utf-8") as f:
+            f.write(SURF_PARAM_CASES)
+        rep = run(L1, [sp])
+        check("L1 Surface 参数变量（u, v）不误报未定义",
               bool(rep) and rep.get("ok") is True and not rep.get("warnings"),
               json.dumps(rep, ensure_ascii=False)[:300] if rep else "no JSON")
 
