@@ -3,7 +3,7 @@ name: auto-geogebra
 description: Use when 需要把高校数学教学创意转化为可运行的 GeoGebra 动态演示/课件/动画：设计交互变量与滑块、生成并验证 GeoGebra 指令、导出 .ggb 文件（覆盖《高等数学》《线性代数》《概率论与数理统计》与数学专业课程）。触发词：GeoGebra 演示、ggb 课件、动态演示制作、滑块与参数设计、指令校验、导数/积分/线性变换/概率模拟类演示等。不要用于非数学教学用途，也不替代教师自己的教学设计。
 metadata:
   author: 张敬信 (zhjx19)
-  version: "1.5.24"
+  version: "1.5.25"
   source: autos.skills.geogebra v0.3.1 (aardio Autos skill)
 license: Apache-2.0
 ---
@@ -291,6 +291,12 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 | 随机/分布/直方图 | `RandomDiscrete`, `Histogram`, `BarChart`, `BinomialDist`, `Poisson` |
 
 ## 更新记录
+
+### v1.5.25（2026-10-10 · 第二十六批实跑：6 类新主题）
+- **真机跑通 6 个新主题**：QR 分解几何、假设检验功效曲线、拉格朗日乘子（梯度平行）、模拟退火（接受概率×冷却）、遗传算法（种群收敛）、SIR 传染病模型（相平面）。（作品不随技能分发。）
+- **本轮无新引擎坑**；正面确认：`SolveODE(y′,x′,…)` 解 SIR 相平面、`Curve(u, exp(-dE/r^u), …)` 表达冷却调度、erf 解析 CDF 画功效曲线均可用。
+- **模式扩充**：`patterns.md` 增 QR 分解、功效曲线、拉格朗日乘子（梯度平行）、模拟退火、遗传算法、SIR 相平面 6 个模式（4.143–4.148）。
+- test-prompts 55 → 57 例；冒烟仍 31 项全绿。
 
 ### v1.5.24（2026-10-10 · 第二十五批实跑：6 类新主题）
 - **真机跑通 6 个新主题**：Logistic 映射蛛网图、M/M/1 排队系统、元胞自动机 rule 90（Sierpinski）、对数几率与 sigmoid、矩阵指数 e^{At}、贝叶斯后验更新（Beta-二项共轭）。（作品不随技能分发。）
