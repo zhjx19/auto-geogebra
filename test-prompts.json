@@ -93,5 +93,15 @@
     "id": 19,
     "prompt": "用若干条线段逼近曲线，演示折线长度随分割变细趋于曲线弧长。",
     "expected": "第零层澄清（曲线、区间、分割数范围）→ 指令：节点 `pts = Sequence((xk, f(xk)), k, 0, n)`、折线 `Polyline(pts)`；折线长 = `Sum(Zip(Length(w), w, Sequence(Segment(Element(pts,k), Element(pts,k+1)), k, 1, n)))`；真弧长 `Length(f, a, b)`；`n` 作滑块。→ 双验证 → 真机导出。"
+  },
+  {
+    "id": 20,
+    "prompt": "演示数值积分：同样把 [0,1] 分成 n 段，梯形公式和 Simpson 公式哪个更接近精确值。",
+    "expected": "第零层澄清（被积函数、区间、n 范围，Simpson 需偶数）→ 指令：梯形和 `h*Sum((f(x_k)+f(x_{k-1}))/2, k, 1, n)`、Simpson `h/3*Sum(f(x_{2k-2})+4f(x_{2k-1})+f(x_{2k}), k, 1, n/2)`、精确值；可视化用 `Sequence(Polygon(...))` 画一排梯形；`n` 作滑块。→ 双验证 → 真机导出。"
+  },
+  {
+    "id": 21,
+    "prompt": "演示抛物线的定义：动点到焦点的距离等于它到准线的距离。",
+    "expected": "第零层澄清（参数 p、动点范围）→ 指令：焦点 `F=(0,p)`、准线 `Line((-3,-p),(3,-p))`、抛物线 `f(x)=x²/(4p)`；动点 `Q=(t,f(t))` 与垂足 `(t,-p)`；两条 `Distance` 相等并显示；`p`、`t` 作滑块。→ 双验证 → 真机导出。"
   }
 ]

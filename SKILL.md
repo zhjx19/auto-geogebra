@@ -3,7 +3,7 @@ name: auto-geogebra
 description: Use when 需要把高校数学教学创意转化为可运行的 GeoGebra 动态演示/课件/动画：设计交互变量与滑块、生成并验证 GeoGebra 指令、导出 .ggb 文件（覆盖《高等数学》《线性代数》《概率论与数理统计》与数学专业课程）。触发词：GeoGebra 演示、ggb 课件、动态演示制作、滑块与参数设计、指令校验、导数/积分/线性变换/概率模拟类演示等。不要用于非数学教学用途，也不替代教师自己的教学设计。
 metadata:
   author: 张敬信 (zhjx19)
-  version: "1.5.6"
+  version: "1.5.7"
   source: autos.skills.geogebra v0.3.1 (aardio Autos skill)
 license: Apache-2.0
 ---
@@ -283,6 +283,13 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 | 随机/分布/直方图 | `RandomDiscrete`, `Histogram`, `BarChart`, `BinomialDist`, `Poisson` |
 
 ## 更新记录
+
+### v1.5.7（2026-10-10 · 第八批实跑：6 类新主题）
+- **真机跑通 6 个新主题**：二分法求根、梯形法与 Simpson 法、可微但导数不连续、旋转体体积（圆盘法）、子空间与线性组合、抛物线的焦点与准线。（作品不随技能分发。）
+- **本轮无新引擎坑**；两处已知坑再次现身：`footP = (t,-p)` 小写坐标名成向量（A1，改名 `FootP` 即好）；`g(x)=f(x)²` 辅助函数被自动绘制（A18，`SetVisibleInView` 隐藏）。
+- **正面确认**：`Sum(...,k,1,n)` 数值求和、`Sequence(Polygon(...))` 画一排图形、`Distance(P,Q)`、`Vector((0,0),点)` 均可用。
+- **模式扩充**：`patterns.md` 增数值积分、旋转体（圆盘法）、子空间与线性组合、抛物线焦点准线、可微但导数不连续 5 个模式。
+- test-prompts 19 → 21 例；冒烟仍 29 项全绿。
 
 ### v1.5.6（2026-10-10 · 第七批实跑：6 类新主题）
 - **真机跑通 6 个新主题**：洛必达法则、割线法求根、弧长的折线逼近、一致收敛与逐点收敛、幂级数部分和与收敛半径、处处连续处处不可导（Weierstrass）。（作品不随技能分发。）
