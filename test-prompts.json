@@ -63,5 +63,15 @@
     "id": 13,
     "prompt": "演示异常值对相关系数和回归线的影响：拖动一个点，看 r 和拟合线被拉偏。",
     "expected": "第零层澄清（数据点、是否要拖点）→ 指令：基础点用点列表 `base`；异常点用两滑块控坐标的可动点 `P0`；数据 `pts = Append(base, P0)`；`FitLine(pts)`、`CorrelationCoefficient(pts)`；文本实时显示 r；观察拖动异常点时 r 与回归线的变化。→ 双验证 → 真机导出。"
+  },
+  {
+    "id": 14,
+    "prompt": "做一个牛顿迭代法求根的动态演示：从初始猜测出发，每次作切线，看它一步步逼近根。",
+    "expected": "第零层澄清（方程、初值范围、步数）→ 指令：`Iteration`/`IterationList` 在本引擎**不可用**（anti-patterns A23），改**手写前几步**：`x1 = x0 − f(x0)/f′(x0)`、`x2 = x1 − f(x1)/f′(x1)` …；每步画 `Tangent` 与到 x 轴的 `Segment`；`x0` 作初始猜测滑块；文本显示 x0→x1→x2→…。→ 双验证 → 真机导出。"
+  },
+  {
+    "id": 15,
+    "prompt": "演示插值的 Runge 现象：等距节点越多，插值多项式在端点附近反而振荡越厉害。",
+    "expected": "第零层澄清（被插函数、节点范围）→ 指令：节点 `nodes = Sequence((xk, f(xk)), k, 0, n)`；插值多项式 `Polynomial(nodes)`（命令可用）；`n` 作滑块，观察端点附近振荡（Runge）。注意 `Polynomial(<点列表>)` 是可用命令。→ 双验证 → 真机导出。"
   }
 ]

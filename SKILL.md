@@ -3,7 +3,7 @@ name: auto-geogebra
 description: Use when 需要把高校数学教学创意转化为可运行的 GeoGebra 动态演示/课件/动画：设计交互变量与滑块、生成并验证 GeoGebra 指令、导出 .ggb 文件（覆盖《高等数学》《线性代数》《概率论与数理统计》与数学专业课程）。触发词：GeoGebra 演示、ggb 课件、动态演示制作、滑块与参数设计、指令校验、导数/积分/线性变换/概率模拟类演示等。不要用于非数学教学用途，也不替代教师自己的教学设计。
 metadata:
   author: 张敬信 (zhjx19)
-  version: "1.5.3"
+  version: "1.5.4"
   source: autos.skills.geogebra v0.3.1 (aardio Autos skill)
 license: Apache-2.0
 ---
@@ -203,7 +203,9 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 - 为计算而定义的**辅助函数会被自动绘制**（重复曲线/多余曲面）→ `SetVisibleInView(fn, 1, false)`（2D）/`(fn, -1, false)`（3D）隐藏；
 - 分布命令：`BinomialDist(n,p,k)`/`Poisson(λ,k)` **不可用**、`Normal(μ,σ,x)` 是**累积** → 密度用 `Normal(μ,σ,x,false)`，离散 pmf **显式算**（`BinomialCoefficient(n,k)*p^k*(1−p)^(n−k)`、`λ^k*exp(−λ)/k!`）；
 - 复数必须用**字面量** `a + b*i`；坐标对 `(x,y)` 的 `^2` 是**内积**（z² 映射用 `(x²−y², 2xy)`）；
-- `BarChart(…)` / `Histogram(…)` **不产出图形**（都返回数值）→ 柱状/直方用 `Sequence(Segment((k,0),(k,v)), k, …)`，折线用 `Polyline(...)`。
+- `BarChart(…)` / `Histogram(…)` **不产出图形**（都返回数值）→ 柱状/直方用 `Sequence(Segment((k,0),(k,v)), k, …)`，折线用 `Polyline(...)`；
+- `Iteration` / `IterationList` **不可用** → 迭代类（牛顿法、Euler 法）**手写前几步** `x1 = x0 − f(x0)/f′(x0)` …；
+- 插值多项式用 `Polynomial(<点列表>)`（**可用**）；`CountIf` 的**条件里别放用户函数**，边界尽量内联。
 
 ## 输出给教师的推荐格式
 
@@ -280,6 +282,13 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 | 随机/分布/直方图 | `RandomDiscrete`, `Histogram`, `BarChart`, `BinomialDist`, `Poisson` |
 
 ## 更新记录
+
+### v1.5.4（2026-10-10 · 第五批实跑：6 类新主题）
+- **真机跑通 6 个新主题**：罗尔定理、牛顿迭代法求根、最小二乘（残差平方和）、插值多项式与 Runge 现象、摆线的生成、基变换与坐标。（作品不随技能分发。）
+- **真机实测新坑**（`references/anti-patterns.md` A23–A24）：`Iteration`/`IterationList` **不可用** → 迭代手写前几步；`CountIf` 条件里**不能含参数相关边界/用户函数**。
+- **正面确认**：`Polynomial(<点列表>)`（插值多项式）、`FitLine`、`CorrelationCoefficient`、`Derivative(f,2)`、`Curvature`、`OsculatingCircle`、`Zip`+`Sum` 统计残差平方和均可用。
+- **模式扩充**：`patterns.md` 增中值定理、数值求根（牛顿）、最小二乘残差、插值与 Runge、参数曲线生成、基变换 6 个模式。
+- test-prompts 13 → 15 例；冒烟仍 29 项全绿。
 
 ### v1.5.3（2026-10-10 · 第四批实跑：6 类新主题）
 - **真机跑通 6 个新主题**：ε-δ 极限邻域、导函数与二阶导联动（凹凸/拐点）、二次型等值线与主轴、奇异矩阵压扁平面、曲率圆与曲率半径、异常值对回归线影响。（作品不随技能分发。）
