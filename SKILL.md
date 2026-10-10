@@ -3,7 +3,7 @@ name: auto-geogebra
 description: Use when 需要把高校数学教学创意转化为可运行的 GeoGebra 动态演示/课件/动画：设计交互变量与滑块、生成并验证 GeoGebra 指令、导出 .ggb 文件（覆盖《高等数学》《线性代数》《概率论与数理统计》与数学专业课程）。触发词：GeoGebra 演示、ggb 课件、动态演示制作、滑块与参数设计、指令校验、导数/积分/线性变换/概率模拟类演示等。不要用于非数学教学用途，也不替代教师自己的教学设计。
 metadata:
   author: 张敬信 (zhjx19)
-  version: "1.5.15"
+  version: "1.5.16"
   source: autos.skills.geogebra v0.3.1 (aardio Autos skill)
 license: Apache-2.0
 ---
@@ -207,7 +207,9 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 - `Iteration` / `IterationList` **不可用** → 迭代类（牛顿法、Euler 法）**手写前几步** `x1 = x0 − f(x0)/f′(x0)` …；
 - 插值多项式用 `Polynomial(<点列表>)`（**可用**）；`CountIf` 的**条件里别放用户函数**，边界尽量内联；
 - 字面量点列表 `{(x,y), …}` 默认**隐藏**（数据点看不见）→ `SetVisibleInView(列表, 1, true)`；`Rank` **不可用**，判线性相关用 `Determinant`；
-- 方程 `a*x + b*y = c` 作对象**失败** → 直线用 `Line(点, 点)` 或 `ImplicitCurve(a*x + b*y - c)`。
+- 方程 `a*x + b*y = c` 作对象**失败** → 直线用 `Line(点, 点)` 或 `ImplicitCurve(a*x + b*y - c)`；
+- `SetCaption(对象, "T")` 只设标题、**不显示** → 需再加 `ShowLabel(对象, true)`（真机实测 A29）；
+- 3D 场景：`Text(..., (x,y,z), …)` 的文字**无头预览不显示**（位置已写入 `.ggb` 的 `<startPoint>`，本体正确）；`ZoomIn(...)` 对 3D 预览取景无效（导出器 `setPerspective("T3")` 重置）——3D 文字/取景的预览缺失不算功能错误（真机实测 B14/B15）。
 
 ## 输出给教师的推荐格式
 
@@ -284,6 +286,16 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 | 随机/分布/直方图 | `RandomDiscrete`, `Histogram`, `BarChart`, `BinomialDist`, `Poisson` |
 
 ## 更新记录
+
+### v1.5.16（2026-10-10 · 第十七批实跑：6 类新主题）
+- **真机跑通 6 个新主题**：奇异值分解的几何（单位圆 → 椭圆）、多元复合函数的链式法则（依赖树）、格林公式（环流 = 旋度积分）、Frenet 标架（T/N/B）、简谐振动相图（中心）、切比雪夫多项式（极小极大）。（作品不随技能分发。）
+- **真机实测新坑沉淀**（`references/anti-patterns.md` A29 + B14/B15）：
+  - `SetCaption(向量, "T")` 只设标题（`labelMode` = caption）但对象 `label` 仍隐藏 → 追加 `ShowLabel(对象, true)` 才显示（A29）；
+  - 3D `Text(..., (x,y,z), …)` 的文字在**无头预览不渲染**（位置已写入 `.ggb` 的 `<startPoint>`，本体正确）；3D `ZoomIn(...)` 被导出器的 `setPerspective("T3")` 覆盖、对预览取景无效（B14/B15）。
+- **两条正面确认**：`zt'(t)`（用户复合函数的导数**数值调用**）可用，链式法则两种算法数值一致；`Sum(...)` 离散求和算第二型曲线积分，与旋度积分数值一致（∮ = ∬）。
+- **两处已知坑再现**：树节点小写名 + 坐标成向量、连带 `Segment` 失败（A1，T105）；`x(t)`/`y(t)` 辅助函数被自动绘制需 `SetVisibleInView` 隐藏（A18，T105）。
+- **模式扩充**：`patterns.md` 增 SVD 几何、链式法则依赖树、格林公式、Frenet 标架、简谐振动相图、切比雪夫多项式 6 个模式（4.89–4.94）。
+- test-prompts 37 → 39 例；冒烟仍 30 项全绿。
 
 ### v1.5.15（2026-10-10 · 第十六批实跑：6 类新主题）
 - **真机跑通 6 个新主题**：一般坐标变换的雅可比行列式、保角映射（z²）、第二型曲线积分、鞍点相图、散度与源、复数的极坐标形式。（作品不随技能分发。）

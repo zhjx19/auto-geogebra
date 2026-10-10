@@ -1132,6 +1132,86 @@
 
 常用命令：`i`、`Distance`、`atan2`、`Vector`、`Segment`。（真机实测，T103。）
 
+### 4.89 奇异值分解（SVD）几何模式
+
+适用：奇异值分解、矩阵的几何作用、正交对角化直观。
+
+设计套路：
+
+- 构造**已知 SVD** 的矩阵：`M = R(a)·diag(s1,s2)·R(b)`，四元素显式展开（避开 CAS 专属命令）：
+  `a11 = s1·cos a·cos b − s2·sin a·sin b`，`a12 = −s1·cos a·sin b − s2·sin a·cos b`，`a21 = s1·sin a·cos b + s2·cos a·sin b`，`a22 = −s1·sin a·sin b + s2·cos a·cos b`。
+- 单位圆 `Curve(cos t, sin t, t, 0, 2*pi)`；像曲线 `Curve(a11*cos t + a12*sin t, a21*cos t + a22*sin t, t, 0, 2*pi)` = 椭圆。
+- 右奇异向量 = R(b) 的两列 `(cos b, sin b)`、`(−sin b, cos b)`；其像 = `s1·(cos a, sin a)`、`s2·(−sin a, cos a)`，即椭圆半轴。
+- 观察重点：**半轴长 = 奇异值**，方向 = 左奇异向量。
+
+常用命令：`Curve`、`Vector`、`Slider`、`cos`。（真机实测，T104。）
+
+### 4.90 多元链式法则（依赖树）模式
+
+适用：复合函数求导 / 全导数、链式法则、依赖图。
+
+设计套路：
+
+- `z = f(x,y)`、`x = x(t)`、`y = y(t)`；动点沿参数路径 `Curve(x(t), y(t), t, …)`。
+- 用 `Segment` + `Text` 画依赖树：z 在上、x/y 居中、t 在下，边标 `dz/dx`、`dz/dy`、`dx/dt`、`dy/dt`。
+- 数值核对：`chain = fx·dx/dt + fy·dy/dt` 与 `direct = zt'(t)`（对复合函数导数的**数值调用**）应相等。
+- 观察重点：两条路径之和 = 全导数。
+- **坑**：树节点**必须大写名**（小写名+坐标会被当作向量，见 A1）；`x(t)`、`y(t)` 辅助函数会被自动绘制，用 `SetVisibleInView(fn, 1, false)` 隐藏（A18）。
+
+常用命令：`Curve`、`Segment`、`Text`、函数导数 `f'(x)`。（真机实测，T105。）
+
+### 4.91 格林公式（环流 = 旋度积分）模式
+
+适用：格林公式、第二型曲线积分、环流、通量。
+
+设计套路：
+
+- 向量场小箭头 `Sequence(Sequence(Segment((i,j),(i-0.35j, j+0.35i)), i,-3,3), j,-3,3)`（旋转场，旋度 = 2）。
+- 闭曲线 `Curve(R*cos t, R*sin t, t, 0, 2*pi)`。
+- 左端（环流）用**离散求和**：`Sum((P(x,y)·(−R sin u) + Q(x,y)·(R cos u))·du, k, 0, n-1)`；右端（旋度积分）= `curl·πR²`；两者应相等。
+- 观察重点：∮(Pdx + Qdy) = ∬(Qx − Py) dA。
+
+常用命令：`Sum`、`Sequence`、`Segment`、`Curve`。（真机实测，T106。）
+
+### 4.92 Frenet 标架（T/N/B）模式
+
+适用：空间曲线的活动标架、切向/法向/副法向、曲率。
+
+设计套路：
+
+- 螺旋线 `Curve(a*cos t, a*sin t, b*t, t, 0, 2*pi)`；`s = sqrt(a^2 + b^2)`。
+- **手算解析式**（避开 CAS 专属命令）：`T = (−a sin t, a cos t, b)/s`、`N = (−cos t, −sin t, 0)`、`B = T×N = (b sin t, −b cos t, a)/s`。
+- 向量 `Vector(P, (x(P)+Tx, y(P)+Ty, z(P)+Tz))`；`SetCaption(VecT,"T")` 后**必须** `ShowLabel(VecT,true)` 才显示（见 A29）。
+- 观察重点：T/N/B 两两正交（可用 `Dot` 核验 ≈ 0），构成沿曲线的活动坐标系。
+
+常用命令：`Curve`、`Vector`、`SetCaption`、`ShowLabel`、`sqrt`。（真机实测，T107。）
+
+### 4.93 简谐振动相图（中心）模式
+
+适用：二阶线性 ODE 的相平面、中心 / 闭轨、能量守恒。
+
+设计套路：
+
+- 系统 `x' = v`、`v' = −w^2·x`；`SolveODE(v', x', x0, v0, tEnd, step)`（**顺序 v′, x′**，见 4.86）。
+- 不同初值 → **同心闭轨**（w = 1 为圆，w ≠ 1 为椭圆）。
+- 观察重点：轨线闭合 ⟺ 平衡点为中心（能量 `E = 0.5v² + 0.5w²x²` 守恒）；与鞍点/结点（4.86）对比。
+- 初值振幅要**互异**，否则同振幅的初值会画出重合的轨线。
+
+常用命令：`SolveODE`、`Slider`。（真机实测，T108。）
+
+### 4.94 切比雪夫多项式（极小极大）模式
+
+适用：切比雪夫 / 正交多项式、最小最大逼近、等幅振荡。
+
+设计套路：
+
+- `Tn(x) = If(-1 <= x <= 1, cos(n*arccos(x)))`（`If` 限定义域，避免 |x|>1 时 NaN）；`n` 用整数步长滑块。
+- 极值点 `Sequence((cos(k*pi/n), cos(k*pi)), k, 0, n)`，值在 ±1 交替。
+- 参考线 `Line((-1.1,1),(1.1,1))`、`Line((-1.1,-1),(1.1,-1))`。
+- 观察重点：`|Tn(x)| <= 1` 且等幅振荡（n+1 个极值），即**极小极大**性质。
+
+常用命令：`cos`、`arccos`、`If`、`Sequence`、`Line`。（真机实测，T109。）
+
 ## 5. 中文教学意图到命令检索的经验
 
 教师通常说中文，例如“我想让学生看到割线逼近切线”。技能包应先识别中文关键词，再联想到英文 GeoGebra 命令。高频映射（切线/面积/序列/曲面/线性变换/随机分布等）见 [SKILL.md 的「中文教学意图 → 英文命令快速映射」](../../SKILL.md)；完整映射见 `data/zh-command-aliases.json`。

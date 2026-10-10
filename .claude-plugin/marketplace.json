@@ -6,7 +6,7 @@
     {
       "name": "auto-geogebra",
       "description": "把高校数学教学创意变成可运行、可验证的 GeoGebra 动态演示与 .ggb 文件",
-      "version": "1.5.15",
+      "version": "1.5.16",
       "author": { "name": "zhjx19", "url": "https://github.com/zhjx19" },
       "source": "./",
       "category": "education",

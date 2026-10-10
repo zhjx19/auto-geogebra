@@ -35,6 +35,7 @@
 | A26 ⚙️ | `Rank(<矩阵>)` 执行失败 | 该命令在本引擎不可用 | 判断线性相关用 `Determinant`（2×2：det=0 ⟺ 共线）；更高维可参考 `ReducedRowEchelonForm`（真机实测） |
 | A27 ⚙️ | `ln = a*x + b*y = c`（把**方程本身**当对象）执行失败 | 经命令注入时，**方程形式的对象定义**（含 `=`）不受支持 | 直线用 `Line(点, 点)` / `Line(点, 向量)`；由方程 `a*x + b*y − c = 0` 可用 `ImplicitCurve(a*x + b*y - c)`（真机实测，probeL） |
 | A28 ⚙️ | 纯 3D 曲面/几何体场景（`Surface(f,2π)`、`Cylinder`、`Cone`…）导出预览仍是 2D、看不到 3D | 3D 元素实际类型是 `surfacecartesian3d` / `quadriclimited` 等**带后缀名**，旧版 3D-检测正则只写 `surface` → 漏判、不切 3D 视图 | **已修**：导出器正则改为匹配**任何含 `3d`/`quadric`/`surface` 的类型名**（覆盖 `surfacecartesian3d`、`quadriclimited` 等）（真机实测，T70/T74） |
+| A29 ⚙️ | `SetCaption(Vec, "T")` 设了标题，图形区仍不显示标签 | `SetCaption` 只把对象 `labelMode` 置为 caption（`val=3`），但该对象 `show label` 仍为 `false` | 追加 `ShowLabel(对象, true)` 才会显示 caption（真机实测，T107） |
 
 ## B. 验证行为坑
 
@@ -53,6 +54,8 @@
 | B11 | 导出偶发 `EBUSY: resource busy or locked … DevToolsActivePort` | 临时浏览器 profile 被占用（前次进程残留 / 杀软扫描），非指令问题 | 直接**重试一次**即可（真机实测，偶发） |
 | B12 | 无头预览里**希腊字母**（ζ、ω 等）显示为空/缺字形，但 `.ggb` 文本本身正确 | 无头 Chrome 缺对应字体字形（中文正常、希腊字母缺） | `.ggb` 本体无碍（教师本地 GeoGebra 字体齐全）；预览只作功能核对，**不必因缺字重导**（真机实测，T82） |
 | B13 | L1 报 `Surface(u, v, u^2−v^2, u, −1, 1, v, −1, 1)` 的参数变量 `u`/`v` 「使用前未定义」 | `Surface` 的参数变量未被当作绑定变量（`Curve`/`Function` 已豁免，`Surface` 漏了） | **v1.5.14 已修复**（`Surface` 列入迭代命令豁免，裸标识符参数视为已定义） |
+| B14 | 3D 场景中 `Text(..., (<x>,<y>,<z>), true, true)` 的文字在无头预览里**不显示** | 无头 3D 视图（`getPNGBase64`）不渲染 `text` 对象；文字位置其实已写入 `.ggb` 的 `<startPoint>`，本体正确 | 预览中 3D 文字缺失**不等于**功能错误；用 `insp.py`/XML 查 `<startPoint>` 确认已创建（真机实测，T107） |
+| B15 | 3D 场景里 `ZoomIn(minX,minY,minZ,maxX,maxY,maxZ)` 对**导出预览**无效，视角不变 | 导出器检测到三维对象后 `setPerspective("T3")` 重置视图，覆盖此前 `ZoomIn` | 3D 预览取景由导出器决定；不必再用 `ZoomIn` 调 3D 取景（真机实测，T107） |
 
 ## C. 教学设计反例（评审视角）
 
