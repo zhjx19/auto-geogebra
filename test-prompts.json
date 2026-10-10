@@ -83,5 +83,15 @@
     "id": 17,
     "prompt": "演示过拟合与欠拟合：给一组数据点，用不同阶数的多项式拟合，看阶数太高会过拟合。",
     "expected": "第零层澄清（数据点、阶数范围）→ 指令：数据点用字面量列表（**须 `SetVisibleInView(列表,1,true)`** 否则看不见，anti-patterns A25）；`FitPoly(pts, d)`，`d` 作滑块；观察 d 小欠拟合、d 大过拟合。→ 双验证 → 真机导出。"
+  },
+  {
+    "id": 18,
+    "prompt": "演示函数列 xⁿ 在 [0,1] 上逐点收敛但不一致收敛。",
+    "expected": "第零层澄清（函数列、区间）→ 指令：函数列用 `Sequence(x^k, k, 1, n)`（列表元素为函数时会分别绘制），`n` 作滑块；极限函数 `If(x<1, 0, 1)`；观察 xⁿ 逐点收敛到不连续的阶梯函数 → 不一致收敛。→ 双验证 → 真机导出。"
+  },
+  {
+    "id": 19,
+    "prompt": "用若干条线段逼近曲线，演示折线长度随分割变细趋于曲线弧长。",
+    "expected": "第零层澄清（曲线、区间、分割数范围）→ 指令：节点 `pts = Sequence((xk, f(xk)), k, 0, n)`、折线 `Polyline(pts)`；折线长 = `Sum(Zip(Length(w), w, Sequence(Segment(Element(pts,k), Element(pts,k+1)), k, 1, n)))`；真弧长 `Length(f, a, b)`；`n` 作滑块。→ 双验证 → 真机导出。"
   }
 ]
