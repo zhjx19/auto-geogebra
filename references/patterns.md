@@ -1674,6 +1674,81 @@
 
 常用命令：`ImplicitCurve`、`Vector`、`Point`。（真机实测，T145。）
 
+### 4.131 蒲丰投针模式
+
+适用：蒲丰投针、几何概率、蒙特卡洛估 π。
+
+设计套路：
+
+- 随机投针：中心 `cy = Random()`（条带内），角 `th = Random()*pi/2`；相交判据 `Min(cy, 1-cy) <= (L/2)*sinθ`（**`Min` 大写**，A32）。
+- 画针：`Sequence(Segment(中心 ∓ (L/2)(cosθ, sinθ)), i, 1, N)`；用 `Mod(i-1, k)` 分行排布。
+- 估计 `π ≈ 2·L·N/(d·相交数)`。
+- 观察重点：相交频率 → P = 2L/(πd)。
+
+常用命令：`Sequence`、`Random`、`Min`、`Mod`、`Segment`、`Line`。（真机实测，T146。）
+
+### 4.132 ROC 曲线与 AUC 模式
+
+适用：ROC、AUC、分类器评估、阈值。
+
+设计套路：
+
+- 用**解析 CDF** 画 ROC：`cdf(x) = 0.5*(1 + erf(x/sqrt(2)))`；`Curve(1 - cdf((t-μn)/σn), 1 - cdf((t-μp)/σp), t, …)`（**不要用 `Normal(μ,σ,t)` 画曲线，见 A33**）。
+- 阈值点 `(FPR(t), TPR(t))`；对角线 `Line((0,0),(1,1))`。
+- AUC = `cdf((μp-μn)/sqrt(σp^2+σn^2))`。
+- 观察重点：曲线越靠左上、AUC 越接近 1。
+- **坑**：`cdf` 辅助函数会被自动绘制 → `SetVisibleInView(cdf, 1, false)`（A18）。
+
+常用命令：`erf`、`Curve`、`Line`。（真机实测，T147。）
+
+### 4.133 拓扑排序（DAG）模式
+
+适用：拓扑排序、有向无环图、依赖关系。
+
+设计套路：
+
+- 顶点用大写点名 + `SetCaption` 编号 + `ShowLabel(点, true)`（A29）；有向边用 `Vector(点, 点)`（自带箭头）。
+- 反复取入度为 0 的顶点，得一个拓扑序。
+- 观察重点：只有 DAG 才存在拓扑序。
+
+常用命令：`Vector`、`SetCaption`、`ShowLabel`。（真机实测，T148。）
+
+### 4.134 泊松过程（计数过程）模式
+
+适用：泊松过程、到达计数、随机过程。
+
+设计套路：
+
+- 间隔 `gaps = Sequence(-ln(Random())/λ, i, 1, n)`；到达时刻 `arr = Sequence(Sum(Element(gaps,j), j, 1, i), i, 1, n)`（**`Sum` 放进 `Sequence` 元素**，非嵌套 `Sum`，A30）。
+- 阶梯用横 / 竖两族 `Sequence(Segment(...))`；均值线 `Line((0,0), (T, λT))`。
+- 观察重点：N(t) 约以速率 λ 增长。
+
+常用命令：`Sequence`、`ln`、`Random`、`Sum`、`Element`、`Segment`、`Line`。（真机实测，T149。）
+
+### 4.135 RK4 与 Euler 精度对比模式
+
+适用：数值解 ODE、方法精度、局部/全局误差。
+
+设计套路：
+
+- 同一 h 下**手写** Euler（1 次求值/步）与 RK4（4 次求值/步，k1..k4）各前几步；`Polyline` 连折线；叠加精确解（已知解析式时）。
+- 观察重点：RK4 紧贴精确解、Euler 迅速偏离（如 y'=−2xy：x=1.5 时 Euler→0、RK4≈精确）。
+- 提示：本引擎无内建多方法 ODE 求解器，逐法手写前几步即可（可复用 A23「迭代手写」思路）。
+
+常用命令：`Polyline`、函数求值、`SetLineStyle`。（真机实测，T150。）
+
+### 4.136 低秩逼近（SVD 截断）模式
+
+适用：低秩逼近、SVD 截断、降维、压缩。
+
+设计套路：
+
+- 复用「已知 SVD」构造 `M = R(a)·diag(s1,s2)·R(b)`（见 4.89）；完整像 = 椭圆 `Curve`。
+- rank-1 近似 `M ≈ s1·u1·v1ᵀ`：把单位圆的像压成**线段** `Segment(-s1·u1, s1·u1)`，`u1 = (cos a, sin a)`。
+- 观察重点：取最大奇异值项 = 最佳 1 维近似。
+
+常用命令：`Curve`、`Segment`、`Vector`。（真机实测，T151。）
+
 ## 5. 中文教学意图到命令检索的经验
 
 教师通常说中文，例如“我想让学生看到割线逼近切线”。技能包应先识别中文关键词，再联想到英文 GeoGebra 命令。高频映射（切线/面积/序列/曲面/线性变换/随机分布等）见 [SKILL.md 的「中文教学意图 → 英文命令快速映射」](../../SKILL.md)；完整映射见 `data/zh-command-aliases.json`。

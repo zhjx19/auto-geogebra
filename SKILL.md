@@ -3,7 +3,7 @@ name: auto-geogebra
 description: Use when 需要把高校数学教学创意转化为可运行的 GeoGebra 动态演示/课件/动画：设计交互变量与滑块、生成并验证 GeoGebra 指令、导出 .ggb 文件（覆盖《高等数学》《线性代数》《概率论与数理统计》与数学专业课程）。触发词：GeoGebra 演示、ggb 课件、动态演示制作、滑块与参数设计、指令校验、导数/积分/线性变换/概率模拟类演示等。不要用于非数学教学用途，也不替代教师自己的教学设计。
 metadata:
   author: 张敬信 (zhjx19)
-  version: "1.5.22"
+  version: "1.5.23"
   source: autos.skills.geogebra v0.3.1 (aardio Autos skill)
 license: Apache-2.0
 ---
@@ -212,6 +212,7 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 - `SetCaption(对象, "T")` 只设标题、**不显示** → 需再加 `ShowLabel(对象, true)`（真机实测 A29）；
 - 3D 空间曲线上 `OsculatingCircle` **失败**（二维可用）→ 曲率/挠率用解析式 + `Vector` 画 T、N 箭头（真机实测 A31）；
 - 内置命令 `Max`/`Min` 必须**首字母大写**（小写 `max()`/`min()` 静默失败）——L1 已提醒 `lowercase-command`（真机实测 A32）；
+- 分布 CDF 要**画曲线**时别用 `Normal(μ,σ,x)`（对符号变量不绘制）→ 用解析式 `0.5*(1+erf(x/sqrt(2)))`；纯数值 cumulative 仍可用（真机实测 A33）；
 - 3D 场景：`Text(..., (x,y,z), …)` 的文字**无头预览不显示**（位置已写入 `.ggb` 的 `<startPoint>`，本体正确）；`ZoomIn(...)` 对 3D 预览取景无效（导出器 `setPerspective("T3")` 重置）——3D 文字/取景的预览缺失不算功能错误（真机实测 B14/B15）。
 
 ## 输出给教师的推荐格式
@@ -289,6 +290,14 @@ Text("\begin{aligned} 行列式 > 0 &： 定向保持 \\ 行列式 < 0 &： 定�
 | 随机/分布/直方图 | `RandomDiscrete`, `Histogram`, `BarChart`, `BinomialDist`, `Poisson` |
 
 ## 更新记录
+
+### v1.5.23（2026-10-10 · 第二十四批实跑：6 类新主题）
+- **真机跑通 6 个新主题**：蒲丰投针、ROC 曲线与 AUC、拓扑排序（DAG）、泊松过程、RK4 与 Euler 精度对比、低秩逼近（SVD 截断）。（作品不随技能分发。）
+- **真机实测新坑沉淀**（`references/anti-patterns.md` A33）：`Curve(1 − Normal(μ,σ,tt), …)` 曲线**不绘制**（`Normal` 对**符号变量**不求解值）→ 画分布 CDF 用解析式 `0.5*(1+erf(x/sqrt(2)))`。
+- **A18 再现**：ROC 辅助函数 `cdf` 被自动绘制 → `SetVisibleInView` 隐藏（T147）。
+- **正面确认**：`Min`/`Mod` 大写命令、`erf`、`Polyline` 均可用；（随机/计数类）`Sequence`+`Element`+`Sum` 组合可用。
+- **模式扩充**：`patterns.md` 增蒲丰投针、ROC/AUC、拓扑排序、泊松过程、RK4 对比、低秩逼近 6 个模式（4.131–4.136）。
+- test-prompts 51 → 53 例；冒烟仍 31 项全绿。
 
 ### v1.5.22（2026-10-10 · 第二十三批实跑：6 类新主题）
 - **真机跑通 6 个新主题**：中心极限定理模拟、最小生成树（Kruskal）、决策树的信息增益、正定矩阵与二次型曲面（3D）、傅里叶变换初步（高斯对偶）、共轭梯度法。（作品不随技能分发。）
